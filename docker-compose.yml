@@ -1,0 +1,46 @@
+services:
+  # 1. O Banco de Dados (localmente no Docker)
+  database:
+    image: mongo:6.0
+    container_name: nutritionCalendar_db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 2. O Backend (NestJS)
+  backend:
+    build:
+      context: ./Backend/backend
+      dockerfile: Dockerfile
+    container_name: nutritionCalendar_backend
+    depends_on:
+      - database
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://database:27017/nutrition-clinic
+      - JWT_SECRET=sua_chave_secreta_super_segura
+    networks:
+      - app-network
+
+  # 3. O Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./Frontend/frontend
+      dockerfile: Dockerfile
+    container_name: nutritionCalendar_frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+
+volumes:
+  mongo_data:
+
+networks:
+  app-network:
+    driver: bridge
