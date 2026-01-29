@@ -12,7 +12,7 @@ services:
   # 2. O Backend (NestJS)
   backend:
     build:
-      context: ./Backend/backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: nutritionCalendar_backend
     depends_on:
@@ -28,7 +28,7 @@ services:
   # 3. O Frontend (React + Vite)
   frontend:
     build:
-      context: ./Frontend/frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: nutritionCalendar_frontend
     depends_on:
