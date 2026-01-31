@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 
 @Injectable()
 export class AppointmentRepository {
@@ -43,5 +44,22 @@ export class AppointmentRepository {
         ],
       })
       .exec();
+  }
+
+  async update(
+    id: string,
+    updateAppointmentDto: UpdateAppointmentDto,
+  ): Promise<Appointment | null> {
+    return this.appointmentModel
+      .findByIdAndUpdate(id, updateAppointmentDto, { new: true })
+      .exec();
+  }
+
+  async findById(id: string): Promise<Appointment | null> {
+    return this.appointmentModel.findById(id).exec();
+  }
+
+  async deleteAppointment(id: string) {
+    return this.appointmentModel.findByIdAndDelete(id).exec();
   }
 }

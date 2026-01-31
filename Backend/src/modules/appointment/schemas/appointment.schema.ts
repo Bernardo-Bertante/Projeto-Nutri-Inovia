@@ -41,4 +41,4 @@ export class Appointment {
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);
 
-AppointmentSchema.index({ nutritionistId: 1, startDate: 1 });
+AppointmentSchema.index({ nutritionistId: 1, startDate: 1, endDate: 1 });
