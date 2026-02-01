@@ -4,6 +4,7 @@ import { Appointment, AppointmentSchema } from './schemas/appointment.schema';
 import { AppointmentController } from './appointment.controller';
 import { AppointmentService } from './appointment.service';
 import { AppointmentRepository } from './appointment.repository';
+import { AppointmentMapper } from './mapper/appointment-mapper';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { AppointmentRepository } from './appointment.repository';
     ]),
   ],
   controllers: [AppointmentController],
-  providers: [AppointmentService, AppointmentRepository],
+  providers: [AppointmentService, AppointmentRepository, AppointmentMapper],
 })
 export class AppointmentModule {}

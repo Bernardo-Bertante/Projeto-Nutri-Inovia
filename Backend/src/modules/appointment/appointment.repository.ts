@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model } from 'mongoose';
 import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
+import { IAppointment } from './domain/appointment.interface';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 
@@ -14,20 +15,22 @@ export class AppointmentRepository {
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
-  ): Promise<Appointment> {
-    const createdAppointment = new this.appointmentModel(createAppointmentDto);
-    return createdAppointment.save();
+  ): Promise<IAppointment> {
+    const createdAppointment =
+      await this.appointmentModel.create(createAppointmentDto);
+    return this.toDomain(createdAppointment);
   }
 
-  async findAll(): Promise<Appointment[]> {
-    return this.appointmentModel.find().exec();
+  async findAll(): Promise<IAppointment[]> {
+    const appointments = await this.appointmentModel.find().exec();
+    return appointments.map((appointment) => this.toDomain(appointment));
   }
 
   async findConflicting(
     nutritionistId: string,
     newAppointStartDate: Date,
     newAppointEndDate: Date,
-  ): Promise<Appointment | null> {
+  ): Promise<IAppointment | null> {
     return this.appointmentModel
       .findOne({
         nutritionistId,
@@ -49,17 +52,39 @@ export class AppointmentRepository {
   async update(
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
-  ): Promise<Appointment | null> {
-    return this.appointmentModel
+  ): Promise<IAppointment | null> {
+    const appointmentUpdated = await this.appointmentModel
       .findByIdAndUpdate(id, updateAppointmentDto, { new: true })
+      .exec();
+
+    return appointmentUpdated ? this.toDomain(appointmentUpdated) : null;
+  }
+
+  async findById(id: string): Promise<IAppointment | null> {
+    const appointment = await this.appointmentModel.findById(id).exec();
+    return appointment ? this.toDomain(appointment) : null;
+  }
+
+  async deleteAppointment(id: string): Promise<void> {
+    const deletedAppointment = await this.appointmentModel
+      .findByIdAndDelete(id)
       .exec();
   }
 
-  async findById(id: string): Promise<Appointment | null> {
-    return this.appointmentModel.findById(id).exec();
-  }
-
-  async deleteAppointment(id: string) {
-    return this.appointmentModel.findByIdAndDelete(id).exec();
+  private toDomain(doc: AppointmentDocument): IAppointment {
+    return {
+      id: doc._id.toString(),
+      startDate: doc.startDate,
+      endDate: doc.endDate,
+      nutritionistId: doc.nutritionistId,
+      patientName: doc.patientName,
+      email: doc.email,
+      phoneNumber: doc.phoneNumber,
+      birthDate: doc.birthDate,
+      bodyType: doc.bodyType,
+      cpf: doc.cpf,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
   }
 }

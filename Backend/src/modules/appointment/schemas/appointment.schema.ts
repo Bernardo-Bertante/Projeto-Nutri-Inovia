@@ -37,6 +37,9 @@ export class Appointment {
 
   @Prop({ required: true })
   cpf: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

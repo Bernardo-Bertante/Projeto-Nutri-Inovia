@@ -6,12 +6,13 @@ import {
 import { AppointmentRepository } from './appointment.repository';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { IAppointment } from './domain/appointment.interface';
 
 @Injectable()
 export class AppointmentService {
   constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
-  async create(appointmentDto: CreateAppointmentDto) {
+  async create(appointmentDto: CreateAppointmentDto): Promise<IAppointment> {
     const startPeriod = new Date(appointmentDto.startDate);
     const endPeriod = new Date(appointmentDto.endDate);
 
@@ -30,11 +31,14 @@ export class AppointmentService {
     return this.appointmentRepository.create(appointmentDto);
   }
 
-  async findAll() {
+  async findAll(): Promise<IAppointment[]> {
     return this.appointmentRepository.findAll();
   }
 
-  async update(id: string, appointmentDto: UpdateAppointmentDto) {
+  async update(
+    id: string,
+    appointmentDto: UpdateAppointmentDto,
+  ): Promise<IAppointment> {
     const updatedAppointment = await this.appointmentRepository.update(
       id,
       appointmentDto,
@@ -45,11 +49,11 @@ export class AppointmentService {
     return updatedAppointment;
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<IAppointment> {
     return this.appointmentRepository.findById(id);
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<void> {
     const appointmentToBeDeleted = await this.findById(id);
 
     if (!appointmentToBeDeleted) {

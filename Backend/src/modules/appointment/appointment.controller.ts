@@ -21,36 +21,44 @@ import {
   ApiNotFoundResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
-import { Appointment } from './schemas/appointment.schema';
 import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { AppointmentResponseDto } from './dtos/appointment-response.dto';
+import { AppointmentMapper } from './mapper/appointment-mapper';
 
 @ApiTags('Appointments')
 @Controller('appointments')
 export class AppointmentController {
-  constructor(private readonly appointmentService: AppointmentService) {}
+  constructor(
+    private readonly appointmentService: AppointmentService,
+    private readonly appointmentMapper: AppointmentMapper,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar um novo agendamento' })
   @ApiBody({ type: CreateAppointmentDto })
   @ApiCreatedResponse({
     description: 'Agendamento criado com sucesso.',
-    type: Appointment,
+    type: AppointmentResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Erro de validação ou conflito de horário.',
   })
-  create(@Body() appointmentDto: CreateAppointmentDto): Promise<Appointment> {
-    return this.appointmentService.create(appointmentDto);
+  async create(
+    @Body() appointmentDto: CreateAppointmentDto,
+  ): Promise<AppointmentResponseDto> {
+    const result = await this.appointmentService.create(appointmentDto);
+    return this.appointmentMapper.toResponseDto(result);
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar todos os agendamentos' })
   @ApiOkResponse({
     description: 'Lista de Agendamento',
-    type: [Appointment],
+    type: [AppointmentResponseDto],
   })
-  findAll(): Promise<Appointment[]> {
-    return this.appointmentService.findAll();
+  async findAll(): Promise<AppointmentResponseDto[]> {
+    const result = await this.appointmentService.findAll();
+    return result.map((a) => this.appointmentMapper.toResponseDto(a));
   }
 
   @Patch(':id')
@@ -62,16 +70,17 @@ export class AppointmentController {
   })
   @ApiOkResponse({
     description: 'Consulta atualizada com sucesso',
-    type: Appointment,
+    type: AppointmentResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'Consulta não encontrada.',
   })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() appointmentDto: UpdateAppointmentDto,
-  ): Promise<Appointment> {
-    return this.appointmentService.update(id, appointmentDto);
+  ): Promise<AppointmentResponseDto> {
+    const result = await this.appointmentService.update(id, appointmentDto);
+    return this.appointmentMapper.toResponseDto(result);
   }
 
   @Delete(':id')
