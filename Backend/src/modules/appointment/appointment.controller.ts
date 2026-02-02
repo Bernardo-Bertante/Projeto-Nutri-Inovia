@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
-import { CreateAppointmentDto } from './dtos/create-appointment.dto';
+import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -21,9 +21,9 @@ import {
   ApiNotFoundResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
-import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
-import { AppointmentResponseDto } from './dtos/appointment-response.dto';
-import { AppointmentMapper } from './mapper/appointment-mapper';
+import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
+import { AppointmentResponseDto } from '../dtos/appointment-response.dto';
+import { AppointmentMapper } from '../mapper/appointment-mapper';
 
 @ApiTags('Appointments')
 @Controller('appointments')

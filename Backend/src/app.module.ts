@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppointmentModule } from './modules/appointment/appointment.module';
+import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
+import { NutritionistSeed } from './database/seeds/nutritionist.seed';
 
 @Module({
   imports: [
@@ -18,8 +20,9 @@ import { AppointmentModule } from './modules/appointment/appointment.module';
       inject: [ConfigService],
     }),
     AppointmentModule,
+    NutritionistModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, NutritionistSeed],
 })
 export class AppModule {}

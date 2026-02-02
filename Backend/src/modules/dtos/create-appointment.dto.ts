@@ -20,7 +20,7 @@ export class CreateAppointmentDto {
   endDate: string;
 
   @ApiProperty({
-    example: 'bruna.oliveira2',
+    example: '65b8...',
     description: 'ID do nutricionista responsável pela consulta',
   })
   @IsString()

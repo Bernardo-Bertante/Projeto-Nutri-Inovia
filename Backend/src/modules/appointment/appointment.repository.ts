@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
+import {
+  Appointment,
+  AppointmentDocument,
+} from '../schemas/appointment.schema';
 import { IAppointment } from './domain/appointment.interface';
-import { CreateAppointmentDto } from './dtos/create-appointment.dto';
-import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 
 @Injectable()
 export class AppointmentRepository {
@@ -31,7 +34,7 @@ export class AppointmentRepository {
     newAppointStartDate: Date,
     newAppointEndDate: Date,
   ): Promise<IAppointment | null> {
-    return this.appointmentModel
+    const result = await this.appointmentModel
       .findOne({
         nutritionistId,
         $or: [
@@ -47,6 +50,8 @@ export class AppointmentRepository {
         ],
       })
       .exec();
+
+    return this.toDomain(result);
   }
 
   async update(
@@ -76,7 +81,7 @@ export class AppointmentRepository {
       id: doc._id.toString(),
       startDate: doc.startDate,
       endDate: doc.endDate,
-      nutritionistId: doc.nutritionistId,
+      nutritionistId: doc.nutritionistId.toString(),
       patientName: doc.patientName,
       email: doc.email,
       phoneNumber: doc.phoneNumber,

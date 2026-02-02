@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+import { Nutritionist } from './nutritionist.schema';
 
 export type AppointmentDocument = HydratedDocument<Appointment>;
 
 export enum BodyType {
-  ECTOMORPH = 'Ectomorfo',
-  MESOMORPH = 'Mesomorfo',
-  ENDOMORPH = 'Endomorfo',
+  ECTOMORPH = 'ECTOMORFO',
+  MESOMORPH = 'MESOMORFO',
+  ENDOMORPH = 'ENDOMORFO',
 }
 
 @Schema({ timestamps: true })
@@ -17,8 +18,12 @@ export class Appointment {
   @Prop({ required: true })
   endDate: Date;
 
-  @Prop({ required: true })
-  nutritionistId: string;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Nutritionist.name,
+    required: true,
+  })
+  nutritionistId: Types.ObjectId;
 
   @Prop({ required: true })
   patientName: string;

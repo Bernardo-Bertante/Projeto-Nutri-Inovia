@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AppointmentRepository } from './appointment.repository';
-import { CreateAppointmentDto } from './dtos/create-appointment.dto';
-import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { IAppointment } from './domain/appointment.interface';
 
 @Injectable()

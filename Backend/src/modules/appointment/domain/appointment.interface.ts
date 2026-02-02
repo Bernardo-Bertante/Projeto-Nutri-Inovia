@@ -1,4 +1,4 @@
-import { BodyType } from '../schemas/appointment.schema';
+import { BodyType } from '../../schemas/appointment.schema';
 
 export interface IAppointment {
   id?: string;

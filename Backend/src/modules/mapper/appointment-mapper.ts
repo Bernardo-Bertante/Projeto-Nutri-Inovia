@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IAppointment } from '../domain/appointment.interface';
+import { IAppointment } from '../appointment/domain/appointment.interface';
 import { AppointmentResponseDto } from '../dtos/appointment-response.dto';
 
 @Injectable()
