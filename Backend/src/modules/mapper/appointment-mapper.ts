@@ -5,11 +5,20 @@ import { AppointmentResponseDto } from '../dtos/appointment-response.dto';
 @Injectable()
 export class AppointmentMapper {
   toResponseDto(a: IAppointment): AppointmentResponseDto {
+    const nutritionistData = a.nutritionistId as any;
+    const nutritionistValue =
+      nutritionistData && nutritionistData.name
+        ? {
+            id: nutritionistData.id.toString(),
+            name: nutritionistData.name,
+            crn: nutritionistData.crn,
+          }
+        : nutritionistData.toString();
     return {
       id: a.id!,
       startDate: a.startDate,
       endDate: a.endDate,
-      nutritionistId: a.nutritionistId,
+      nutritionistId: nutritionistValue,
       patientName: a.patientName,
       email: a.email,
       phoneNumber: a.phoneNumber,

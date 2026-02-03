@@ -7,7 +7,11 @@ interface INutritionist {
   name: string;
 }
 
-export function AppointmentForm() {
+interface Props {
+  onSuccess?: () => void;
+}
+
+export function AppointmentForm({ onSuccess }: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
   const [formData, setFormData] = useState({
     patientName: "",
@@ -39,17 +43,34 @@ export function AppointmentForm() {
     e.preventDefault();
     setStatus({ type: "", message: "" });
 
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+
+    end.setHours(end.getHours() + 1);
+
+    if (end <= start) {
+      setStatus({
+        type: "error",
+        message: "O horário de término deve ser depois do início.",
+      });
+      return;
+    }
+
     try {
       // Envia para o backend
       await api.post("/appointments", {
         ...formData,
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
+        startDate: start,
+        endDate: end,
       });
       setStatus({
         type: "success",
         message: "Agendamento realizado com sucesso!",
       });
+
+      if (onSuccess) {
+        onSuccess();
+      }
 
       // Limpa formulário, menos o Nuticonista
       setFormData((prev) => ({
@@ -217,40 +238,27 @@ export function AppointmentForm() {
           />
         </div>
 
-        {/* Datas (Inicio e Fim) */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Início
-            </label>
-            <input
-              type="datetime-local"
-              required
-              className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
+        {/* Datas (Inicio, logo Fim) */}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Data e Hora do agendamento
+          </label>
+          <input
+            type="datetime-local"
+            required
+            className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
     ${formData.startDate ? "text-black" : "text-gray-400"}
   `}
-              value={formData.startDate}
-              onChange={(e) =>
-                setFormData({ ...formData, startDate: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Fim
-            </label>
-            <input
-              type="datetime-local"
-              required
-              className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
-    ${formData.endDate ? "text-black" : "text-gray-400"}
-  `}
-              value={formData.endDate}
-              onChange={(e) =>
-                setFormData({ ...formData, endDate: e.target.value })
-              }
-            />
-          </div>
+            value={formData.startDate}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                startDate: e.target.value,
+                endDate: e.target.value,
+              })
+            }
+          />
         </div>
 
         <button

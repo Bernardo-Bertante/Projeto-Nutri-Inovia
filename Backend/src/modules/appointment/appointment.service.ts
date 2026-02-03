@@ -32,7 +32,7 @@ export class AppointmentService {
   }
 
   async findAll(): Promise<IAppointment[]> {
-    return this.appointmentRepository.findAll();
+    return this.appointmentRepository.findAllPopulated();
   }
 
   async update(

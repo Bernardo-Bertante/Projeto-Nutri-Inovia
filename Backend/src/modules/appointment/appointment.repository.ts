@@ -24,8 +24,11 @@ export class AppointmentRepository {
     return this.toDomain(createdAppointment);
   }
 
-  async findAll(): Promise<IAppointment[]> {
-    const appointments = await this.appointmentModel.find().exec();
+  async findAllPopulated(): Promise<IAppointment[]> {
+    const appointments = await this.appointmentModel
+      .find()
+      .populate('nutritionistId', 'name crn')
+      .exec();
     return appointments.map((appointment) => this.toDomain(appointment));
   }
 
@@ -77,11 +80,20 @@ export class AppointmentRepository {
   }
 
   private toDomain(doc: AppointmentDocument): IAppointment {
+    const nutriData = doc.nutritionistId as any;
+    const nutritionistValue =
+      nutriData && nutriData.name
+        ? {
+            id: nutriData._id.toString(),
+            name: nutriData.name,
+            crn: nutriData.crn,
+          }
+        : nutriData.toString();
     return {
       id: doc._id.toString(),
       startDate: doc.startDate,
       endDate: doc.endDate,
-      nutritionistId: doc.nutritionistId.toString(),
+      nutritionistId: nutritionistValue,
       patientName: doc.patientName,
       email: doc.email,
       phoneNumber: doc.phoneNumber,

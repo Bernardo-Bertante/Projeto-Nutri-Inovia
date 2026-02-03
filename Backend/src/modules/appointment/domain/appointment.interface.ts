@@ -4,7 +4,7 @@ export interface IAppointment {
   id?: string;
   startDate: Date;
   endDate: Date;
-  nutritionistId: string;
+  nutritionistId: string | { id: string; name: string; crn: string };
   patientName: string;
   email: string;
   phoneNumber: string;

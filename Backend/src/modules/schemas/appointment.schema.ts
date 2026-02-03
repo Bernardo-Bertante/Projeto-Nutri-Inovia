@@ -20,10 +20,10 @@ export class Appointment {
 
   @Prop({
     type: Types.ObjectId,
-    ref: Nutritionist.name,
+    ref: 'Nutritionist',
     required: true,
   })
-  nutritionistId: Types.ObjectId;
+  nutritionistId: string;
 
   @Prop({ required: true })
   patientName: string;
