@@ -4,6 +4,10 @@ import {
   Nutritionist,
   NutritionistSchema,
 } from '../schemas/nutritionist.schema';
+import { NutritionistController } from './nutritionist.controller';
+import { NutritionistMapper } from '../mapper/nutritionist-mapper';
+import { NutritionistService } from './nutritionist.service';
+import { NutritionistRepository } from './nutritionist.repository';
 
 @Module({
   imports: [
@@ -11,8 +15,8 @@ import {
       { name: Nutritionist.name, schema: NutritionistSchema },
     ]),
   ],
-  exports: [MongooseModule],
-  controllers: [],
-  providers: [],
+  exports: [MongooseModule, NutritionistService],
+  controllers: [NutritionistController],
+  providers: [NutritionistService, NutritionistRepository, NutritionistMapper],
 })
 export class NutritionistModule {}

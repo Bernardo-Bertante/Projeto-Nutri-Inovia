@@ -34,7 +34,7 @@ export class AppointmentRepository {
     newAppointStartDate: Date,
     newAppointEndDate: Date,
   ): Promise<IAppointment | null> {
-    const result = await this.appointmentModel
+    const conflict = await this.appointmentModel
       .findOne({
         nutritionistId,
         $or: [
@@ -51,7 +51,7 @@ export class AppointmentRepository {
       })
       .exec();
 
-    return this.toDomain(result);
+    return conflict ? this.toDomain(conflict) : null;
   }
 
   async update(

@@ -13,6 +13,9 @@ export class Nutritionist {
 
   @Prop({ required: true, unique: true })
   crn: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const NutritionistSchema = SchemaFactory.createForClass(Nutritionist);

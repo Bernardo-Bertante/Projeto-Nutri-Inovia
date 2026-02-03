@@ -5,9 +5,9 @@ import { Nutritionist } from './nutritionist.schema';
 export type AppointmentDocument = HydratedDocument<Appointment>;
 
 export enum BodyType {
-  ECTOMORPH = 'ECTOMORFO',
-  MESOMORPH = 'MESOMORFO',
-  ENDOMORPH = 'ENDOMORFO',
+  ECTOMORPH = 'ECTOMORPH',
+  MESOMORPH = 'MESOMORPH',
+  ENDOMORPH = 'ENDOMORPH',
 }
 
 @Schema({ timestamps: true })
