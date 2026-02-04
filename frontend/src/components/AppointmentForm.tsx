@@ -7,11 +7,34 @@ interface INutritionist {
   name: string;
 }
 
-interface Props {
-  onSuccess?: () => void;
+interface IAppointment {
+  id: string;
+  patientName: string;
+  startDate: string; // Datas são convertidas pela função auxiliar
+  endDate: string;
+  email: string;
+  nutritionistId: {
+    id: string;
+    name: string;
+    crn: string;
+  };
+  phoneNumber: string;
+  birthDate: string;
+  bodyType: BodyType | "";
+  cpf: string;
 }
 
-export function AppointmentForm({ onSuccess }: Props) {
+interface Props {
+  onSuccess?: () => void;
+  appointmentToEdit: IAppointment | null;
+  onCancelEdit?: () => void;
+}
+
+export function AppointmentForm({
+  onSuccess,
+  appointmentToEdit,
+  onCancelEdit,
+}: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
   const [formData, setFormData] = useState({
     patientName: "",
@@ -21,13 +44,25 @@ export function AppointmentForm({ onSuccess }: Props) {
     email: "",
     phoneNumber: "",
     birthDate: "",
-    bodyType: "" as BodyType | "",
+    bodyType: "",
     cpf: "",
   });
   const [status, setStatus] = useState<{
     type: "success" | "error" | "";
     message: string;
   }>({ type: "", message: "" });
+
+  // Helper para formatar data para o input (YYYY-MM-DDThh:mm)
+  const formatForInput = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    // Ajuste de fuso horário simples para o input local
+    const offset = date.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(date.getTime() - offset)
+      .toISOString()
+      .slice(0, 16);
+    return localISOTime;
+  };
 
   // Busca nutricionistas ao carregar
   useEffect(() => {
@@ -38,6 +73,43 @@ export function AppointmentForm({ onSuccess }: Props) {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (appointmentToEdit) {
+      setFormData({
+        patientName: appointmentToEdit.patientName,
+        // Tenta pegar o ID do objeto ou a string direta
+        nutritionistId:
+          typeof appointmentToEdit.nutritionistId === "object"
+            ? appointmentToEdit.nutritionistId.id
+            : appointmentToEdit.nutritionistId,
+        startDate: formatForInput(appointmentToEdit.startDate),
+        endDate: formatForInput(appointmentToEdit.endDate),
+        email: appointmentToEdit.email,
+        phoneNumber: appointmentToEdit.phoneNumber,
+        birthDate: formatForInput(appointmentToEdit.birthDate),
+        bodyType: appointmentToEdit.bodyType,
+        cpf: appointmentToEdit.cpf,
+      });
+    } else {
+      // cancelou edição, limpa tudo
+      resetForm();
+    }
+  }, [appointmentToEdit]);
+
+  const resetForm = () => {
+    setFormData({
+      patientName: "",
+      nutritionistId: nutritionists[0]?.id || "",
+      startDate: "",
+      endDate: "",
+      email: "",
+      phoneNumber: "",
+      birthDate: "",
+      bodyType: "",
+      cpf: "",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,15 +122,22 @@ export function AppointmentForm({ onSuccess }: Props) {
 
     try {
       // Envia para o backend
-      await api.post("/appointments", {
-        ...formData,
-        startDate: start,
-        endDate: end,
-      });
-      setStatus({
-        type: "success",
-        message: "Agendamento realizado com sucesso!",
-      });
+      if (appointmentToEdit) {
+        // --- (PUT) ---
+        const id = appointmentToEdit.id;
+        await api.patch(`/appointments/${id}`, formData);
+        setStatus({ type: "success", message: "Agendamento atualizado!" });
+      } else {
+        // --- (POST) ---
+        await api.post("/appointments", {
+          ...formData,
+          startDate: start,
+          endDate: end,
+          birthDate: new Date(formData.birthDate),
+        });
+        setStatus({ type: "success", message: "Agendamento criado!" });
+      }
+      resetForm();
 
       if (onSuccess) {
         onSuccess();
@@ -88,10 +167,20 @@ export function AppointmentForm({ onSuccess }: Props) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-6">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        Novo Agendamento
-      </h2>
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-6 border-t-4 border-blue-600">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {appointmentToEdit ? "Editar Agendamento" : "Novo Agendamento"}
+        </h2>
+        {appointmentToEdit && (
+          <button
+            onClick={onCancelEdit}
+            className="text-sm text-red-500 hover:underline"
+          >
+            Cancelar Edição
+          </button>
+        )}
+      </div>
 
       {status.message && (
         <div

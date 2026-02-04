@@ -29,6 +29,14 @@ export class UpdateAppointmentDto {
   endDate: string;
 
   @ApiProperty({
+    example: '65b8...',
+    description: 'ID do nutricionista responsável pela consulta',
+  })
+  @IsString()
+  @IsNotEmpty()
+  nutritionistId: string;
+
+  @ApiProperty({
     example: 'João da Silva',
     description: 'Nome completo do paciente',
   })

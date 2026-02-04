@@ -5,10 +5,16 @@ import { AppointmentList } from "./components/AppointmentList";
 function App() {
   // Esse estado serve apenas para forçar a atualização da lista
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingAppointment, setEditingAppointment] = useState<any>(null);
 
   const handleUpdate = () => {
     // Incrementa o contador para avisar a lista que algo mudou
     setRefreshKey((prev) => prev + 1);
+    setEditingAppointment(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAppointment(null); // Limpa se o usuário cancelar
   };
 
   return (
@@ -18,11 +24,23 @@ function App() {
         <p className="mt-2 text-gray-600">Sistema de Agendamento Inteligente</p>
       </div>
 
-      {/* Passamos a função de sucesso para o formulário */}
-      <AppointmentForm onSuccess={handleUpdate} />
+      {/* O Formulário recebe o objeto de edição */}
+      <AppointmentForm
+        onSuccess={handleUpdate}
+        appointmentToEdit={editingAppointment}
+        onCancelEdit={handleCancelEdit}
+      />
 
-      {/* Passamos o estado para a lista saber quando atualizar */}
-      <AppointmentList keyRefresh={refreshKey} onDeleteSuccess={handleUpdate} />
+      {/* A Lista avisa quando clicar no lápis */}
+      <AppointmentList
+        keyRefresh={refreshKey}
+        onDeleteSuccess={handleUpdate}
+        onEdit={(appointment) => {
+          setEditingAppointment(appointment);
+          // Opcional: Rolar a página para o topo para ver o formulário
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
     </div>
   );
 }
