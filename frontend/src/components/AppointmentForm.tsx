@@ -48,14 +48,6 @@ export function AppointmentForm({ onSuccess }: Props) {
 
     end.setHours(end.getHours() + 1);
 
-    if (end <= start) {
-      setStatus({
-        type: "error",
-        message: "O horário de término deve ser depois do início.",
-      });
-      return;
-    }
-
     try {
       // Envia para o backend
       await api.post("/appointments", {
@@ -181,10 +173,10 @@ export function AppointmentForm({ onSuccess }: Props) {
           />
         </div>
 
-        {/* CPF do Pasciente */}
+        {/* CPF do Paciente */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            CPF do Pasciente
+            CPF do Paciente
           </label>
           <input
             type="text"
@@ -196,10 +188,10 @@ export function AppointmentForm({ onSuccess }: Props) {
           />
         </div>
 
-        {/* Biotipo do Pasciente */}
+        {/* Biotipo do Paciente */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Biotipo do Pasciente
+            Biotipo do Paciente
           </label>
           <select
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-black"
@@ -223,7 +215,7 @@ export function AppointmentForm({ onSuccess }: Props) {
         {/* Data de Nascimento */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Data de Nascimento
+            Data de Nascimento do Paciente
           </label>
           <input
             type="date"

@@ -1,4 +1,13 @@
-import { IsDateString, IsNotEmpty, IsString, IsEnum } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsString,
+  IsEnum,
+  IsEmail,
+  IsNumberString,
+  IsMobilePhone,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { BodyType } from '../schemas/appointment.schema';
 
@@ -7,7 +16,7 @@ export class CreateAppointmentDto {
     example: '2026-01-29T14:00:00.000Z',
     description: 'Data e horário de início da consulta (ISO 8601)',
   })
-  @IsDateString()
+  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
   @IsNotEmpty()
   startDate: string;
 
@@ -15,7 +24,7 @@ export class CreateAppointmentDto {
     example: '2026-01-29T15:00:00.000Z',
     description: 'Data e horário de término da consulta (ISO 8601)',
   })
-  @IsDateString()
+  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
   @IsNotEmpty()
   endDate: string;
 
@@ -31,15 +40,17 @@ export class CreateAppointmentDto {
     example: 'João da Silva',
     description: 'Nome completo do paciente',
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Nome do paciente deve conter apenas letras' })
+  @Matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, {
+    message: 'Nome do paciente deve conter apenas letras',
+  })
   patientName: string;
 
   @ApiProperty({
     example: 'joao.silva@email.com',
     description: 'E-mail do paciente para contato',
   })
-  @IsString()
+  @IsEmail({}, { message: 'E-mail inválido.' })
   @IsNotEmpty()
   email: string;
 
@@ -47,7 +58,7 @@ export class CreateAppointmentDto {
     example: '+5511999999999',
     description: 'Telefone celular do paciente no padrão brasileiro (+55)',
   })
-  @IsString()
+  @IsMobilePhone('pt-BR', {}, { message: 'Telefone inválido.' })
   @IsNotEmpty()
   phoneNumber: string;
 
@@ -55,7 +66,7 @@ export class CreateAppointmentDto {
     example: '1995-06-20',
     description: 'Data de nascimento do paciente (YYYY-MM-DD)',
   })
-  @IsDateString()
+  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
   @IsNotEmpty()
   birthDate: string;
 
@@ -73,7 +84,7 @@ export class CreateAppointmentDto {
     example: '12345678901',
     description: 'CPF do paciente (somente números)',
   })
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   cpf: string;
 }

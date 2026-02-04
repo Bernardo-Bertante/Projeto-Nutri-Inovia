@@ -75,8 +75,21 @@ export function AppointmentList({ keyRefresh, onDeleteSuccess }: Props) {
               {/* Botão de Excluir */}
               <button
                 onClick={() => handleDelete(app.id)}
-                className="absolute top-1 right-1 p-2 text-gray-400 hover:text-red-500 transition"
                 title="Cancelar Agendamento"
+                className="
+    absolute top-1 right-1
+    p-1
+    bg-transparent
+    border-0
+    appearance-none
+    shadow-none
+    text-gray-400
+    hover:text-red-500
+    focus:outline-none
+    focus:ring-0
+    focus-visible:outline-none
+    transition
+  "
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

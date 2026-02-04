@@ -7,19 +7,26 @@ import { AppointmentRepository } from './appointment.repository';
 import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { IAppointment } from './domain/appointment.interface';
+import { isWeekend } from '../util/util-date';
+import { cpf } from 'cpf-cnpj-validator';
+import { throwError } from 'rxjs';
+import { validateAppointmentDate } from './validator/appointment-validator.date';
 
 @Injectable()
 export class AppointmentService {
   constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
-  async create(appointmentDto: CreateAppointmentDto): Promise<IAppointment> {
-    const startPeriod = new Date(appointmentDto.startDate);
-    const endPeriod = new Date(appointmentDto.endDate);
-
+  private async validateConflict(
+    nutritionistId: string,
+    start: Date,
+    end: Date,
+    ignoreId?: string,
+  ) {
     const conflict = await this.appointmentRepository.findConflicting(
-      appointmentDto.nutritionistId,
-      startPeriod,
-      endPeriod,
+      nutritionistId,
+      start,
+      end,
+      ignoreId,
     );
 
     if (conflict) {
@@ -27,6 +34,28 @@ export class AppointmentService {
         'Conflito de horário! Este nutricionista já possui agendamento neste intervalo de tempo desse dia.',
       );
     }
+  }
+
+  private validateCPF(DTOcpf: string) {
+    if (!cpf.isValid(DTOcpf)) {
+      throw new BadRequestException('CPF inválido');
+    }
+  }
+
+  async create(appointmentDto: CreateAppointmentDto): Promise<IAppointment> {
+    const startPeriod = new Date(appointmentDto.startDate);
+    const endPeriod = new Date(appointmentDto.endDate);
+    const bornDate = new Date(appointmentDto.birthDate);
+
+    this.validateConflict(
+      appointmentDto.nutritionistId,
+      startPeriod,
+      endPeriod,
+    );
+
+    this.validateCPF(appointmentDto.cpf);
+
+    validateAppointmentDate(startPeriod, endPeriod, bornDate);
 
     return this.appointmentRepository.create(appointmentDto);
   }
@@ -39,6 +68,20 @@ export class AppointmentService {
     id: string,
     appointmentDto: UpdateAppointmentDto,
   ): Promise<IAppointment> {
+    const startPeriod = new Date(appointmentDto.startDate);
+    const endPeriod = new Date(appointmentDto.endDate);
+    const bornDate = new Date(appointmentDto.birthDate);
+
+    this.validateConflict(
+      appointmentDto.nutritionistId,
+      startPeriod,
+      endPeriod,
+    );
+
+    this.validateCPF(appointmentDto.cpf);
+
+    validateAppointmentDate(startPeriod, endPeriod, bornDate);
+
     const updatedAppointment = await this.appointmentRepository.update(
       id,
       appointmentDto,

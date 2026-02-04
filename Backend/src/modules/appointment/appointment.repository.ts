@@ -34,25 +34,21 @@ export class AppointmentRepository {
 
   async findConflicting(
     nutritionistId: string,
-    newAppointStartDate: Date,
-    newAppointEndDate: Date,
+    newStart: Date,
+    newEnd: Date,
+    ignoreId?: string,
   ): Promise<IAppointment | null> {
-    const conflict = await this.appointmentModel
-      .findOne({
-        nutritionistId,
-        $or: [
-          // O novo começa DENTRO de um existente
-          { startDate: { $lt: newAppointEndDate, $gte: newAppointStartDate } },
-          // O novo termina DENTRO de um existente
-          { endDate: { $gt: newAppointStartDate, $lte: newAppointEndDate } },
-          // O novo ENGLOBA totalmente um existente
-          {
-            startDate: { $lte: newAppointStartDate },
-            endDate: { $gte: newAppointEndDate },
-          },
-        ],
-      })
-      .exec();
+    const query: any = {
+      nutritionistId,
+      startDate: { $lt: newEnd },
+      endDate: { $gt: newStart },
+    };
+
+    if (ignoreId) {
+      query._id = { $ne: ignoreId };
+    }
+
+    const conflict = await this.appointmentModel.findOne(query).exec();
 
     return conflict ? this.toDomain(conflict) : null;
   }
