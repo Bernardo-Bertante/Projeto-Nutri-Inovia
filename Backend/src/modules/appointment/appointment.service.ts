@@ -47,6 +47,8 @@ export class AppointmentService {
     const endPeriod = new Date(appointmentDto.endDate);
     const bornDate = new Date(appointmentDto.birthDate);
 
+    console.log(startPeriod, endPeriod);
+
     this.validateConflict(
       appointmentDto.nutritionistId,
       startPeriod,
@@ -56,12 +58,13 @@ export class AppointmentService {
     this.validateCPF(appointmentDto.cpf);
 
     validateAppointmentDate(startPeriod, endPeriod, bornDate);
+    const appointment = await this.appointmentRepository.create(appointmentDto);
 
-    return this.appointmentRepository.create(appointmentDto);
+    return appointment;
   }
 
   async findAll(): Promise<IAppointment[]> {
-    return this.appointmentRepository.findAllPopulated();
+    return await this.appointmentRepository.findAllPopulated();
   }
 
   async update(
@@ -79,6 +82,8 @@ export class AppointmentService {
     );
 
     this.validateCPF(appointmentDto.cpf);
+
+    console.log(startPeriod, endPeriod);
 
     validateAppointmentDate(startPeriod, endPeriod, bornDate);
 

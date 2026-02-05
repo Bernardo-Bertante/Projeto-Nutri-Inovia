@@ -39,13 +39,15 @@ export function AppointmentList({
   }, [keyRefresh]);
 
   // Função auxiliar para formatar data bonitinha
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (iso: string) => {
+    if (!iso) return "";
+
+    // 2026-02-19T15:01:00.000Z
+    const [datePart, timePart] = iso.split("T");
+    const [year, month, day] = datePart.split("-");
+    const [hour, minute] = timePart.split(":");
+
+    return `${day}/${month} ${hour}:${minute}`;
   };
 
   const handleDelete = async (id: string) => {

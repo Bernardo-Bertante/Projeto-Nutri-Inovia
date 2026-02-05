@@ -12,9 +12,11 @@ export function validateAppointmentDate(
   const startMinutes =
     startPeriod.getUTCHours() * 60 + startPeriod.getUTCMinutes();
   const endMinutes = endPeriod.getUTCHours() * 60 + endPeriod.getUTCMinutes();
-  const open = 11 * 60;
+  const open = 1 * 60;
   const close = 21 * 60;
   const bornDate = new Date(birthDate);
+
+  console.log(startMinutes, endMinutes, open, close);
 
   if (bornDate > now) {
     throw new BadRequestException('Selecione uma data de nascimento válida.');

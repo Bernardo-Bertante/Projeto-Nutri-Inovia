@@ -52,16 +52,30 @@ export function AppointmentForm({
     message: string;
   }>({ type: "", message: "" });
 
-  // Helper para formatar data para o input (YYYY-MM-DDThh:mm)
-  const formatForInput = (dateString: string) => {
+  // Helper somente para o Date
+  const formatDateForInput = (dateString: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    // Ajuste de fuso horário simples para o input local
-    const offset = date.getTimezoneOffset() * 60000;
-    const localISOTime = new Date(date.getTime() - offset)
-      .toISOString()
-      .slice(0, 16);
-    return localISOTime;
+    return dateString.slice(0, 10); // YYYY-MM-DD
+  };
+
+  const localEndDateTimeToUTC = (localDateTime: string) => {
+    const date = new Date(localDateTime);
+    date.setHours(date.getHours() + 1);
+    return new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000,
+    ).toISOString();
+  };
+
+  const localStartDateTimeToUTC = (localDateTime: string) => {
+    const date = new Date(localDateTime);
+    return new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000,
+    ).toISOString();
+  };
+
+  const utcToLocalInput = (iso: string) => {
+    if (!iso) return "";
+    return iso.slice(0, 16);
   };
 
   // Busca nutricionistas ao carregar
@@ -83,11 +97,11 @@ export function AppointmentForm({
           typeof appointmentToEdit.nutritionistId === "object"
             ? appointmentToEdit.nutritionistId.id
             : appointmentToEdit.nutritionistId,
-        startDate: formatForInput(appointmentToEdit.startDate),
-        endDate: formatForInput(appointmentToEdit.endDate),
+        startDate: utcToLocalInput(appointmentToEdit.startDate),
+        endDate: utcToLocalInput(appointmentToEdit.endDate),
         email: appointmentToEdit.email,
         phoneNumber: appointmentToEdit.phoneNumber,
-        birthDate: formatForInput(appointmentToEdit.birthDate),
+        birthDate: formatDateForInput(appointmentToEdit.birthDate),
         bodyType: appointmentToEdit.bodyType,
         cpf: appointmentToEdit.cpf,
       });
@@ -115,25 +129,25 @@ export function AppointmentForm({
     e.preventDefault();
     setStatus({ type: "", message: "" });
 
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-
-    end.setHours(end.getHours() + 1);
-
     try {
       // Envia para o backend
       if (appointmentToEdit) {
         // --- (PUT) ---
         const id = appointmentToEdit.id;
-        await api.patch(`/appointments/${id}`, formData);
+        await api.patch(`/appointments/${id}`, {
+          ...formData,
+          startDate: localStartDateTimeToUTC(formData.startDate),
+          endDate: localEndDateTimeToUTC(formData.startDate),
+          birthDate: formData.birthDate,
+        });
         setStatus({ type: "success", message: "Agendamento atualizado!" });
       } else {
         // --- (POST) ---
         await api.post("/appointments", {
           ...formData,
-          startDate: start,
-          endDate: end,
-          birthDate: new Date(formData.birthDate),
+          startDate: localStartDateTimeToUTC(formData.startDate),
+          endDate: localEndDateTimeToUTC(formData.startDate),
+          birthDate: formatDateForInput(formData.birthDate),
         });
         setStatus({ type: "success", message: "Agendamento criado!" });
       }
