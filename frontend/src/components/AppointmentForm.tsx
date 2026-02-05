@@ -28,14 +28,17 @@ interface Props {
   onSuccess?: () => void;
   appointmentToEdit: IAppointment | null;
   onCancelEdit?: () => void;
+  onDeleteSuccess: () => void;
 }
 
 export function AppointmentForm({
   onSuccess,
   appointmentToEdit,
   onCancelEdit,
+  onDeleteSuccess,
 }: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
+  const [appointments, setAppointments] = useState<IAppointment[]>([]);
   const [formData, setFormData] = useState({
     patientName: "",
     nutritionistId: "",
@@ -180,29 +183,51 @@ export function AppointmentForm({
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja cancelar este agendamento?")) return;
+
+    try {
+      await api.delete(`/appointments/${id}`);
+      onDeleteSuccess(); // Avisa o pai para recarregar a lista
+    } catch (error) {
+      alert("Erro ao cancelar agendamento");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-6 border-t-4 border-blue-600">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex gap-5">
         <h2 className="text-2xl font-bold text-gray-800">
           {appointmentToEdit ? "Editar Agendamento" : "Novo Agendamento"}
         </h2>
         {appointmentToEdit && (
-          <button
-            onClick={onCancelEdit}
-            className="text-sm text-red-500 hover:underline"
+          <div className="flex gap-2">
+            {/*Botão de Excluir*/}
+            <button
+              onClick={() => handleDelete(appointmentToEdit.id)}
+              title="Cancelar Agendamento"
+              className="text-gray-400 hover:text-red-500 transition"
+            >
+              🗑️
+            </button>
+            <button
+              onClick={onCancelEdit}
+              title="Cancelar Alterações"
+              className="text-gray-400 hover:text-gray-700 transition"
+            >
+              ❌
+            </button>
+          </div>
+        )}
+        {status.message && (
+          <div
+            className={`p-3 rounded mb-4 text-sm ${status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
           >
-            Cancelar Edição
-          </button>
+            {status.message}
+          </div>
         )}
       </div>
-
-      {status.message && (
-        <div
-          className={`p-3 rounded mb-4 text-sm ${status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-        >
-          {status.message}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Nutricionista */}

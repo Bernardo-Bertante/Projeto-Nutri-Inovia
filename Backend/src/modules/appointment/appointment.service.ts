@@ -79,6 +79,7 @@ export class AppointmentService {
       appointmentDto.nutritionistId,
       startPeriod,
       endPeriod,
+      id,
     );
 
     this.validateCPF(appointmentDto.cpf);
