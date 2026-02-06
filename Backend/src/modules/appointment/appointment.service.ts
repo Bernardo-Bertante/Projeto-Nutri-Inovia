@@ -7,9 +7,7 @@ import { AppointmentRepository } from './appointment.repository';
 import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { IAppointment } from './domain/appointment.interface';
-import { isWeekend } from '../util/util-date';
 import { cpf } from 'cpf-cnpj-validator';
-import { throwError } from 'rxjs';
 import { validateAppointmentDate } from './validator/appointment-validator.date';
 
 @Injectable()
@@ -49,7 +47,7 @@ export class AppointmentService {
 
     console.log(startPeriod, endPeriod);
 
-    this.validateConflict(
+    await this.validateConflict(
       appointmentDto.nutritionistId,
       startPeriod,
       endPeriod,
@@ -75,7 +73,8 @@ export class AppointmentService {
     const endPeriod = new Date(appointmentDto.endDate);
     const bornDate = new Date(appointmentDto.birthDate);
 
-    this.validateConflict(
+    console.log(startPeriod, endPeriod);
+    await this.validateConflict(
       appointmentDto.nutritionistId,
       startPeriod,
       endPeriod,

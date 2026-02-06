@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { BodyType, bodyTypeLabels } from "../types/body-type";
+import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface INutritionist {
   id: string;
@@ -195,39 +196,51 @@ export function AppointmentForm({
     }
   };
 
+  const handleCancel = () => {
+    setStatus({ type: "", message: "" }); // limpa mensagem
+    onCancelEdit?.(); // avisa o pai
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-6 border-t-4 border-blue-600">
-      <div className="flex gap-5">
+      <div className="flex gap-5 items-center">
         <h2 className="text-2xl font-bold text-gray-800">
           {appointmentToEdit ? "Editar Agendamento" : "Novo Agendamento"}
         </h2>
+
         {appointmentToEdit && (
           <div className="flex gap-2">
-            {/*Botão de Excluir*/}
             <button
               onClick={() => handleDelete(appointmentToEdit.id)}
               title="Cancelar Agendamento"
               className="text-gray-400 hover:text-red-500 transition"
             >
-              🗑️
+              <TrashIcon className="w-4 h-4" />
             </button>
+
             <button
-              onClick={onCancelEdit}
+              onClick={handleCancel}
               title="Cancelar Alterações"
               className="text-gray-400 hover:text-gray-700 transition"
             >
-              ❌
+              <XMarkIcon className="w-4 h-4" />
             </button>
           </div>
         )}
-        {status.message && (
-          <div
-            className={`p-3 rounded mb-4 text-sm ${status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-          >
-            {status.message}
-          </div>
-        )}
       </div>
+
+      {status.message && (
+        <div
+          className={`inline-block px-3 py-1 rounded mb-4 mt-3 text-sm text-center
+      ${
+        status.type === "success"
+          ? "bg-green-100 text-green-700"
+          : "bg-red-100 text-red-700"
+      }`}
+        >
+          {status.message}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Nutricionista */}

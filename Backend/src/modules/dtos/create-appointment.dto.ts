@@ -84,7 +84,7 @@ export class CreateAppointmentDto {
     example: '12345678901',
     description: 'CPF do paciente (somente números)',
   })
-  @IsNumberString()
+  @IsNumberString({}, { message: 'CPF deve ser somente composto por números.' })
   @IsNotEmpty()
   cpf: string;
 }
