@@ -16,8 +16,6 @@ export function validateAppointmentDate(
   const close = 18 * 60;
   const bornDate = new Date(birthDate);
 
-  console.log(startMinutes, endMinutes, open, close);
-
   if (bornDate > now) {
     throw new BadRequestException('Selecione uma data de nascimento válida.');
   }

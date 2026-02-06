@@ -17,11 +17,14 @@ export class AppointmentRepository {
   ) {}
 
   async create(
-    createAppointmentDto: CreateAppointmentDto,
-  ): Promise<IAppointment> {
-    const createdAppointment =
-      await this.appointmentModel.create(createAppointmentDto);
-    return this.toDomain(createdAppointment);
+    createAppointmentDto: CreateAppointmentDto[],
+  ): Promise<IAppointment[]> {
+    const createdAppointments =
+      await this.appointmentModel.insertMany(createAppointmentDto);
+
+    return createdAppointments.map((appointment) =>
+      this.toDomain(appointment.toObject() as AppointmentDocument),
+    );
   }
 
   async findAllPopulated(): Promise<IAppointment[]> {

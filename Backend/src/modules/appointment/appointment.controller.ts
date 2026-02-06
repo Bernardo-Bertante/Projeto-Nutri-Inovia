@@ -45,9 +45,11 @@ export class AppointmentController {
   })
   async create(
     @Body() appointmentDto: CreateAppointmentDto,
-  ): Promise<AppointmentResponseDto> {
+  ): Promise<AppointmentResponseDto[]> {
     const result = await this.appointmentService.create(appointmentDto);
-    return this.appointmentMapper.toResponseDto(result);
+    return result.map((appointments) =>
+      this.appointmentMapper.toResponseDto(appointments),
+    );
   }
 
   @Get()
@@ -58,7 +60,9 @@ export class AppointmentController {
   })
   async findAll(): Promise<AppointmentResponseDto[]> {
     const result = await this.appointmentService.findAll();
-    return result.map((a) => this.appointmentMapper.toResponseDto(a));
+    return result.map((appointments) =>
+      this.appointmentMapper.toResponseDto(appointments),
+    );
   }
 
   @Patch(':id')

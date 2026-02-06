@@ -40,23 +40,44 @@ export class AppointmentService {
     }
   }
 
-  async create(appointmentDto: CreateAppointmentDto): Promise<IAppointment> {
+  async create(appointmentDto: CreateAppointmentDto): Promise<IAppointment[]> {
+    const appointmentsToCreate = [];
+    const loopCount = appointmentDto.isRecurrent
+      ? appointmentDto.recurrenceCount
+      : 1;
+
     const startPeriod = new Date(appointmentDto.startDate);
     const endPeriod = new Date(appointmentDto.endDate);
     const bornDate = new Date(appointmentDto.birthDate);
 
-    console.log(startPeriod, endPeriod);
+    for (let i = 0; i < loopCount; i++) {
+      const newStart = new Date(startPeriod);
+      newStart.setDate(
+        newStart.getDate() + appointmentDto.recurrenceInterval * i,
+      );
 
-    await this.validateConflict(
-      appointmentDto.nutritionistId,
-      startPeriod,
-      endPeriod,
-    );
+      const newEnd = new Date(endPeriod);
+      newEnd.setDate(newEnd.getDate() + appointmentDto.recurrenceInterval * i);
 
-    this.validateCPF(appointmentDto.cpf);
+      console.log(newStart, newEnd);
 
-    validateAppointmentDate(startPeriod, endPeriod, bornDate);
-    const appointment = await this.appointmentRepository.create(appointmentDto);
+      await this.validateConflict(
+        appointmentDto.nutritionistId,
+        newStart,
+        newEnd,
+      );
+      this.validateCPF(appointmentDto.cpf);
+      validateAppointmentDate(startPeriod, endPeriod, bornDate);
+
+      appointmentsToCreate.push({
+        ...appointmentDto,
+        startDate: newStart,
+        endDate: newEnd,
+      });
+    }
+
+    const appointment =
+      await this.appointmentRepository.create(appointmentsToCreate);
 
     return appointment;
   }
@@ -72,6 +93,16 @@ export class AppointmentService {
     const startPeriod = new Date(appointmentDto.startDate);
     const endPeriod = new Date(appointmentDto.endDate);
     const bornDate = new Date(appointmentDto.birthDate);
+    const currentAppointmentDate = new Date(
+      (await this.appointmentRepository.findById(id)).startDate,
+    );
+    const now = new Date();
+
+    if (currentAppointmentDate < now) {
+      throw new BadRequestException(
+        'Atualização de consultas passadas não são permitidas.',
+      );
+    }
 
     console.log(startPeriod, endPeriod);
     await this.validateConflict(
