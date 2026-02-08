@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Appointment, AppointmentSchema } from './schemas/appointment.schema';
+import { Appointment, AppointmentSchema } from '../schemas/appointment.schema';
 import { AppointmentController } from './appointment.controller';
 import { AppointmentService } from './appointment.service';
 import { AppointmentRepository } from './appointment.repository';
-import { AppointmentMapper } from './mapper/appointment-mapper';
+import { AppointmentMapper } from '../mapper/appointment-mapper';
 
 @Module({
   imports: [

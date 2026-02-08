@@ -1,33 +1,52 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { AppointmentForm } from "./components/AppointmentForm";
+//import { AppointmentList } from "./components/AppointmentList";
+import { CalendarView } from "./components/CalendarView";
 
 function App() {
+  // Esse estado serve apenas para forçar a atualização da lista
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editingAppointment, setEditingAppointment] = useState<any>(null);
+
+  const handleUpdate = () => {
+    // Incrementa o contador para avisar a lista que algo mudou
+    setRefreshKey((prev) => prev + 1);
+    setEditingAppointment(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAppointment(null); // Limpa se o usuário cancelar
+  };
+
   return (
-    // Fundo escuro (zinc-900), texto claro, centralizado na tela
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-zinc-800 rounded-xl shadow-2xl overflow-hidden border border-zinc-700">
-        <div className="p-8">
-          <div className="uppercase tracking-wide text-sm text-indigo-400 font-semibold">
-            Teste de Setup
-          </div>
+    <div className="min-h-screen w-full bg-gray-100 px-6 py-6">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-4xl font-extrabold text-blue-600">Nutri Inovia</h1>
+        <p className="mt-2 text-gray-600">Sistema de Agendamento Inteligente</p>
+      </div>
 
-          <h1 className="block mt-1 text-2xl leading-tight font-bold text-white">
-            React + NestJS + Docker
-          </h1>
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
+        {/* Formulário */}
+        <div className="w-full lg:w-[420px]">
+          <AppointmentForm
+            onSuccess={handleUpdate}
+            appointmentToEdit={editingAppointment}
+            onCancelEdit={handleCancelEdit}
+            onDeleteSuccess={handleUpdate}
+          />
+        </div>
 
-          <p className="mt-2 text-zinc-400">
-            Se você está vendo este cartão estilizado, o
-            <span className="text-teal-400 font-bold mx-1">Tailwind v4</span>
-            está funcionando perfeitamente dentro do Docker!
-          </p>
-
-          <div className="mt-6">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer">
-              Botão Teste
-            </button>
-          </div>
+        {/* Calendário */}
+        <div className="flex-1 bg-white rounded-xl shadow p-4">
+          <CalendarView
+            keyRefresh={refreshKey}
+            onDeleteSuccess={handleUpdate}
+            onEdit={(appointment) => {
+              setEditingAppointment(appointment);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
         </div>
       </div>
     </div>

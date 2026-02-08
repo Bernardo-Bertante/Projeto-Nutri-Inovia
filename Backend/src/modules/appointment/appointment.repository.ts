@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
+import {
+  Appointment,
+  AppointmentDocument,
+} from '../schemas/appointment.schema';
 import { IAppointment } from './domain/appointment.interface';
-import { CreateAppointmentDto } from './dtos/create-appointment.dto';
-import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 
 @Injectable()
 export class AppointmentRepository {
@@ -14,42 +17,47 @@ export class AppointmentRepository {
   ) {}
 
   async create(
-    createAppointmentDto: CreateAppointmentDto,
-  ): Promise<IAppointment> {
-    const createdAppointment =
-      await this.appointmentModel.create(createAppointmentDto);
-    return this.toDomain(createdAppointment);
+    createAppointmentDto: CreateAppointmentDto[],
+  ): Promise<IAppointment[]> {
+    const createdAppointments =
+      await this.appointmentModel.insertMany(createAppointmentDto);
+
+    return createdAppointments.map((appointment) =>
+      this.toDomain(appointment.toObject() as AppointmentDocument),
+    );
   }
 
-  async findAll(): Promise<IAppointment[]> {
-    const appointments = await this.appointmentModel.find().exec();
+  async findAllPopulated(): Promise<IAppointment[]> {
+    const appointments = await this.appointmentModel
+      .find()
+      .populate('nutritionistId', 'name crn')
+      .exec();
     return appointments.map((appointment) => this.toDomain(appointment));
   }
 
   async findConflicting(
     nutritionistId: string,
-    newAppointStartDate: Date,
-    newAppointEndDate: Date,
+    newStart: Date,
+    newEnd: Date,
+    ignoreId?: string,
   ): Promise<IAppointment | null> {
-    return this.appointmentModel
-      .findOne({
-        nutritionistId,
-        $or: [
-          // O novo começa DENTRO de um existente
-          { startDate: { $lt: newAppointEndDate, $gte: newAppointStartDate } },
-          // O novo termina DENTRO de um existente
-          { endDate: { $gt: newAppointStartDate, $lte: newAppointEndDate } },
-          // O novo ENGLOBA totalmente um existente
-          {
-            startDate: { $lte: newAppointStartDate },
-            endDate: { $gte: newAppointEndDate },
-          },
-        ],
-      })
-      .exec();
+    const query: any = {
+      nutritionistId,
+      startDate: { $lt: newEnd },
+      endDate: { $gt: newStart },
+    };
+
+    if (ignoreId) {
+      query._id = { $ne: ignoreId };
+    }
+
+    const conflict = await this.appointmentModel.findOne(query).exec();
+
+    return conflict ? this.toDomain(conflict) : null;
   }
 
   async update(
+    // fazer recurrency
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<IAppointment | null> {
@@ -72,11 +80,20 @@ export class AppointmentRepository {
   }
 
   private toDomain(doc: AppointmentDocument): IAppointment {
+    const nutriData = doc.nutritionistId as any;
+    const nutritionistValue =
+      nutriData && nutriData.name
+        ? {
+            id: nutriData._id.toString(),
+            name: nutriData.name,
+            crn: nutriData.crn,
+          }
+        : nutriData.toString();
     return {
       id: doc._id.toString(),
       startDate: doc.startDate,
       endDate: doc.endDate,
-      nutritionistId: doc.nutritionistId,
+      nutritionistId: nutritionistValue,
       patientName: doc.patientName,
       email: doc.email,
       phoneNumber: doc.phoneNumber,

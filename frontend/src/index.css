@@ -15,6 +15,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.fc-toolbar-title {
+  color: #1f2937 !important;
+  font-weight: 800;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
