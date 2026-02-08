@@ -9,6 +9,7 @@ import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { IAppointment } from './domain/appointment.interface';
 import { cpf } from 'cpf-cnpj-validator';
 import { validateAppointmentDate } from './validator/appointment-validator.date';
+import { isWeekend } from '../util/util-date';
 
 @Injectable()
 export class AppointmentService {
@@ -59,7 +60,12 @@ export class AppointmentService {
       const newEnd = new Date(endPeriod);
       newEnd.setDate(newEnd.getDate() + appointmentDto.recurrenceInterval * i);
 
-      console.log(newStart, newEnd);
+      if (isWeekend(newStart) && appointmentDto.isRecurrent) {
+        const nextMonday = newStart.getDay();
+        const offset = nextMonday === 6 ? 2 : 1;
+        newStart.setDate(newStart.getDate() + offset);
+        newEnd.setDate(newEnd.getDate() + offset);
+      }
 
       await this.validateConflict(
         appointmentDto.nutritionistId,

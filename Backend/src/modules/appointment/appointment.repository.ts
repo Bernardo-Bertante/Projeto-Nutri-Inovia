@@ -57,6 +57,7 @@ export class AppointmentRepository {
   }
 
   async update(
+    // fazer recurrency
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<IAppointment | null> {

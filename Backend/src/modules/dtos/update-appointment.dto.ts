@@ -90,30 +90,4 @@ export class UpdateAppointmentDto {
   @IsNumberString({}, { message: 'CPF deve ser somente composto por números.' })
   @IsNotEmpty()
   cpf: string;
-
-  @ApiProperty({
-    example: 'Sim/Não',
-    description: 'Booleano que diz se a consulta será recorrente ou não.',
-  })
-  @IsNumber()
-  @IsOptional()
-  isRecurrent?: boolean;
-
-  @ApiProperty({
-    example: 'de 5 em 5 dias.',
-    description: 'A cada X dias',
-  })
-  @IsNumber()
-  @IsOptional()
-  @Min(1)
-  recurrenceInterval?: number;
-
-  @ApiProperty({
-    example: 'por 20 dias.',
-    description: 'Repetir X vezes.',
-  })
-  @IsNumber()
-  @IsOptional()
-  @Min(1)
-  recurrenceCount?: number;
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppointmentForm } from "./components/AppointmentForm";
-import { AppointmentList } from "./components/AppointmentList";
+//import { AppointmentList } from "./components/AppointmentList";
 import { CalendarView } from "./components/CalendarView";
 
 function App() {

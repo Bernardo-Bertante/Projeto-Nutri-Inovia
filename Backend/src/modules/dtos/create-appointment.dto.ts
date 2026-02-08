@@ -10,6 +10,7 @@ import {
   IsNumber,
   IsOptional,
   Min,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { BodyType } from '../schemas/appointment.schema';
@@ -95,7 +96,7 @@ export class CreateAppointmentDto {
     example: 'Sim/Não',
     description: 'Booleano que diz se a consulta será recorrente ou não.',
   })
-  @IsNumber()
+  @IsBoolean()
   @IsOptional()
   isRecurrent?: boolean;
 
@@ -103,16 +104,28 @@ export class CreateAppointmentDto {
     example: 'de 5 em 5 dias.',
     description: 'A cada X dias',
   })
-  @IsNumber()
+  @IsNumber(
+    {},
+    {
+      message:
+        'É necessário o uso de um valor que representa o intervalo de dias entre as consultas desse paciente.',
+    },
+  )
   @IsOptional()
   @Min(1)
   recurrenceInterval?: number;
 
   @ApiProperty({
-    example: 'por 20 dias.',
+    example: 'por 7 consultas.',
     description: 'Repetir X vezes.',
   })
-  @IsNumber()
+  @IsNumber(
+    {},
+    {
+      message:
+        'É necessário o uso de um valor que representa quantas consultas serão agendadas.',
+    },
+  )
   @IsOptional()
   @Min(1)
   recurrenceCount?: number;

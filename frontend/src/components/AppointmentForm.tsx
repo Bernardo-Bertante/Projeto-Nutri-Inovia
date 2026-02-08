@@ -40,6 +40,9 @@ export function AppointmentForm({
 }: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
   const [appointments, setAppointments] = useState<IAppointment[]>([]);
+  const [isRecurrent, setIsRecurrent] = useState(false);
+  const [recurrenceInterval, setRecurrenceInterval] = useState(7); // Padrão semanal
+  const [recurrenceCount, setRecurrenceCount] = useState(4); // Padrão 4 sessões
   const [formData, setFormData] = useState({
     patientName: "",
     nutritionistId: "",
@@ -127,11 +130,21 @@ export function AppointmentForm({
       bodyType: "",
       cpf: "",
     });
+    setIsRecurrent(false);
+    setRecurrenceInterval(7);
+    setRecurrenceCount(4);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus({ type: "", message: "" });
+
+    const payload = {
+      ...formData,
+      isRecurrent,
+      recurrenceInterval: Number(recurrenceInterval),
+      recurrenceCount: Number(recurrenceCount),
+    };
 
     try {
       // Envia para o backend
@@ -148,12 +161,17 @@ export function AppointmentForm({
       } else {
         // --- (POST) ---
         await api.post("/appointments", {
-          ...formData,
-          startDate: localStartDateTimeToUTC(formData.startDate),
-          endDate: localEndDateTimeToUTC(formData.startDate),
-          birthDate: formatDateForInput(formData.birthDate),
+          ...payload,
+          startDate: localStartDateTimeToUTC(payload.startDate),
+          endDate: localEndDateTimeToUTC(payload.startDate),
+          birthDate: formatDateForInput(payload.birthDate),
         });
-        setStatus({ type: "success", message: "Agendamento criado!" });
+        setStatus({
+          type: "success",
+          message: isRecurrent
+            ? "Agendamentos criados!"
+            : "Agendamento criado!",
+        });
       }
       resetForm();
 
@@ -161,18 +179,9 @@ export function AppointmentForm({
         onSuccess();
       }
 
-      // Limpa formulário, menos o Nuticonista
-      setFormData((prev) => ({
-        ...prev,
-        patientName: "",
-        startDate: "",
-        endDate: "",
-        email: "",
-        phoneNumber: "",
-        birthDate: "",
-        bodyType: "",
-        cpf: "",
-      }));
+      setTimeout(() => {
+        setStatus({ type: "", message: "" });
+      }, 5000);
     } catch (error: any) {
       // mensagem de erro que o backend manda
       const errorMsg =
@@ -197,7 +206,7 @@ export function AppointmentForm({
   };
 
   const handleCancel = () => {
-    setStatus({ type: "", message: "" }); // limpa mensagem
+    setStatus({ type: "", message: "" });
     onCancelEdit?.(); // avisa o pai
   };
 
@@ -393,6 +402,58 @@ export function AppointmentForm({
             }
           />
         </div>
+
+        {!appointmentToEdit && (
+          <div className="bg-blue-100 p-3 rounded-md border border-blue-100">
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id="recurrence"
+                checked={isRecurrent}
+                onChange={(e) => setIsRecurrent(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <label
+                htmlFor="recurrence"
+                className="text-sm font-bold text-blue-800 cursor-pointer"
+              >
+                Repetir este agendamento?
+              </label>
+            </div>
+
+            {isRecurrent && (
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <label className="block text-xs font-semibold text-blue-700">
+                    A cada (dias)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={recurrenceInterval}
+                    onChange={(e) =>
+                      setRecurrenceInterval(Number(e.target.value))
+                    }
+                    className="mt-1 block w-full rounded border-gray-600 p-1 text-sm, text-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-blue-700">
+                    Quantidade de vezes
+                  </label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="24"
+                    value={recurrenceCount}
+                    onChange={(e) => setRecurrenceCount(Number(e.target.value))}
+                    className="mt-1 block w-full rounded border-gray-600 p-1 text-sm text-black"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <button
           type="submit"
