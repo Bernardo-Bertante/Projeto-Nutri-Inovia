@@ -13,7 +13,7 @@ import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 export class AppointmentRepository {
   constructor(
     @InjectModel(Appointment.name)
-    private appointmentModel: Model<AppointmentDocument>,
+    private readonly appointmentModel: Model<AppointmentDocument>,
   ) {}
 
   async create(
