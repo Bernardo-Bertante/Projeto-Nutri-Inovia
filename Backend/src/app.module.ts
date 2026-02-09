@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
 import { NutritionistSeed } from './database/seeds/nutritionist.seed';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { NutritionistSeed } from './database/seeds/nutritionist.seed';
     }),
     AppointmentModule,
     NutritionistModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, NutritionistSeed],

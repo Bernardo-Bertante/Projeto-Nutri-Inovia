@@ -198,6 +198,7 @@ export function AppointmentForm({
 
     try {
       await api.delete(`/appointments/${id}`);
+      setStatus({ type: "", message: "" });
       onDeleteSuccess(); // Avisa o pai para recarregar a lista
     } catch (error) {
       alert("Erro ao cancelar agendamento");

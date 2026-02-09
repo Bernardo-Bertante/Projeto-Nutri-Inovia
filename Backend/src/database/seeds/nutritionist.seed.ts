@@ -5,6 +5,7 @@ import {
   Nutritionist,
   NutritionistDocument,
 } from '../../modules/schemas/nutritionist.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class NutritionistSeed implements OnModuleInit {
@@ -25,16 +26,21 @@ export class NutritionistSeed implements OnModuleInit {
       return;
     }
 
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash('123456', salt);
+
     const nutritionists = [
       {
         name: 'Dra. Ana Silva',
         email: 'ana.silva@nutri.com',
         crn: 'CRN-12345',
+        password: passwordHash,
       },
       {
         name: 'Dr. Carlos Souza',
         email: 'carlos.souza@nutri.com',
         crn: 'CRN-67890',
+        password: passwordHash, //mesma senha para facilitar
       },
     ];
 
