@@ -65,6 +65,26 @@ export class AppointmentController {
     );
   }
 
+  @Get(':nutritionistId')
+  @ApiOperation({ summary: 'Listar todos os agendamentos de um nutricionista' })
+  @ApiParam({
+    name: 'nutritionistId',
+    type: String,
+    description: 'ID referente ao nutricionista',
+  })
+  @ApiOkResponse({
+    description: 'Lista de Agendamento de um nutricionista',
+    type: [AppointmentResponseDto],
+  })
+  async findAllFromNutriId(
+    @Param('nutritionistId') nutriId: string,
+  ): Promise<AppointmentResponseDto[]> {
+    const result = await this.appointmentService.findAllFromNutriId(nutriId);
+    return result.map((appointments) =>
+      this.appointmentMapper.toResponseDto(appointments),
+    );
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Atualizar consulta por meio do ID' })
   @ApiParam({

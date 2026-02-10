@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { api } from "../services/api";
 
 interface User {
+  id: string;
   name: string;
   email: string;
 }

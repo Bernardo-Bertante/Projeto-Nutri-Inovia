@@ -22,18 +22,16 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<ILogin | null> {
     const user = await this.nutritionistModel.findOne({ email });
 
-    if (!user) {
-      return null;
-    }
+    if (!user) return null;
 
     const isMatch = await bcrypt.compare(pass, user.password);
+    if (!isMatch) return null;
 
-    if (user && isMatch) {
-      const { password, ...result } = user.toObject();
-      return result;
-    }
-
-    return null;
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+    };
   }
 
   async login(user: ILogin): Promise<LoginResponseDto> {

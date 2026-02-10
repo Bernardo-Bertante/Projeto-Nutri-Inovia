@@ -7,6 +7,7 @@ import { api } from "../services/api";
 import type { BodyType } from "../types/body-type";
 import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { AppointmentForm } from "./AppointmentForm";
+import { useAuth } from "../context/AuthContext";
 
 interface IAppointment {
   id: string;
@@ -42,6 +43,7 @@ export function CalendarView({
   const [dayAppointments, setDayAppointments] = useState<any[]>([]); // Lista filtrada do dia
   const [open, setOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<any>(null);
+  const { user } = useAuth();
 
   const handleUpdate = () => {
     setEditingAppointment(null);
@@ -88,8 +90,9 @@ export function CalendarView({
   };
 
   useEffect(() => {
+    const id = user?.id;
     api
-      .get("/appointments") fazer uma rota que pegar somente o do id do nutri logado
+      .get(`/appointments/${id}`)
       .then((response) => {
         const formattedEvents = response.data.map((app: IAppointment) => ({
           id: app.id,
