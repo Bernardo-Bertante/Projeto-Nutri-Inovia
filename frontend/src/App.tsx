@@ -40,12 +40,9 @@ function App() {
         {/* Calendário */}
         <div className="flex-1 bg-white rounded-xl shadow p-4">
           <CalendarView
+            onSuccess={handleUpdate}
             keyRefresh={refreshKey}
             onDeleteSuccess={handleUpdate}
-            onEdit={(appointment) => {
-              setEditingAppointment(appointment);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
           />
         </div>
       </div>

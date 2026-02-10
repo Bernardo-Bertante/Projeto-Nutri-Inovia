@@ -39,7 +39,6 @@ export function AppointmentForm({
   onDeleteSuccess,
 }: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
-  const [appointments, setAppointments] = useState<IAppointment[]>([]);
   const [isRecurrent, setIsRecurrent] = useState(false);
   const [recurrenceInterval, setRecurrenceInterval] = useState(7); // Padrão semanal
   const [recurrenceCount, setRecurrenceCount] = useState(4); // Padrão 4 sessões
@@ -190,6 +189,9 @@ export function AppointmentForm({
         type: "error",
         message: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg,
       });
+      setTimeout(() => {
+        setStatus({ type: "", message: "" });
+      }, 12000);
     }
   };
 
