@@ -89,7 +89,7 @@ export function CalendarView({
 
   useEffect(() => {
     api
-      .get("/appointments")
+      .get("/appointments") fazer uma rota que pegar somente o do id do nutri logado
       .then((response) => {
         const formattedEvents = response.data.map((app: IAppointment) => ({
           id: app.id,
