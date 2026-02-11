@@ -8,20 +8,24 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - app-network
 
   # 2. O Backend (NestJS)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - .env
     container_name: nutritionCalendar_backend
     depends_on:
       - database
     ports:
-      - "3000:3000"
+      - "${BACKEND_PORT}:3000"
     environment:
-      - MONGO_URI=mongodb://database:27017/nutrition-clinic
-      - JWT_SECRET=sua_chave_secreta_super_segura
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - app-network
 
@@ -30,11 +34,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     container_name: nutritionCalendar_frontend
     depends_on:
       - backend
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT}:5173"
     networks:
       - app-network
 

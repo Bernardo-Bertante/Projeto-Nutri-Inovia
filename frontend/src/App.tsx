@@ -1,37 +1,86 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { AppointmentForm } from "./components/AppointmentForm";
+//import { AppointmentList } from "./components/AppointmentList";
+import { CalendarView } from "./components/CalendarView";
+import { Login } from "./components/Login";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
 
-function App() {
+function MainApp() {
+  const { signed, signOut, user, loading } = useAuth();
+  // Esse estado serve apenas para forçar a atualização da lista
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editingAppointment, setEditingAppointment] = useState<any>(null);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!signed) {
+    return <Login />;
+  }
+
+  const handleUpdate = () => {
+    // Incrementa o contador para avisar a lista que algo mudou
+    setRefreshKey((prev) => prev + 1);
+    setEditingAppointment(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAppointment(null); // Limpa se o usuário cancelar
+  };
+
   return (
-    // Fundo escuro (zinc-900), texto claro, centralizado na tela
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-zinc-800 rounded-xl shadow-2xl overflow-hidden border border-zinc-700">
-        <div className="p-8">
-          <div className="uppercase tracking-wide text-sm text-indigo-400 font-semibold">
-            Teste de Setup
-          </div>
-
-          <h1 className="block mt-1 text-2xl leading-tight font-bold text-white">
-            React + NestJS + Docker
+    <div className="min-h-screen w-full bg-gray-100 px-6 py-6">
+      {/* Header */}
+      <div className="flex justify-between items-center max-w-5xl mx-auto mb-10 border-b pb-4">
+        <div>
+          <h1 className="text-4xl font-extrabold text-blue-600">
+            Nutri Inovia
           </h1>
+          <p className="text-gray-600">Olá, {user?.name}</p>
+        </div>
+        <button
+          onClick={signOut}
+          title="Logout"
+          className="px-4 py-2 text-sm text-gray-500 border border-red-200 rounded hover:bg-red-50 transition"
+        >
+          <ArrowRightEndOnRectangleIcon className="w-5 h-5" />
+        </button>
+      </div>
 
-          <p className="mt-2 text-zinc-400">
-            Se você está vendo este cartão estilizado, o
-            <span className="text-teal-400 font-bold mx-1">Tailwind v4</span>
-            está funcionando perfeitamente dentro do Docker!
-          </p>
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
+        {/* Formulário */}
+        <div className="w-full lg:w-[420px]">
+          <AppointmentForm
+            onSuccess={handleUpdate}
+            appointmentToEdit={editingAppointment}
+            onCancelEdit={handleCancelEdit}
+            onDeleteSuccess={handleUpdate}
+          />
+        </div>
 
-          <div className="mt-6">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer">
-              Botão Teste
-            </button>
-          </div>
+        {/* Calendário */}
+        <div className="flex-1 bg-white rounded-xl shadow p-4">
+          <CalendarView
+            onSuccess={handleUpdate}
+            keyRefresh={refreshKey}
+            onDeleteSuccess={handleUpdate}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
+}
