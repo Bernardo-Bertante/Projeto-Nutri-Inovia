@@ -38,7 +38,6 @@ export function AppointmentForm({
   onSuccess,
   appointmentToEdit,
   onCancelEdit,
-  onDeleteSuccess,
   mode,
   setMode,
 }: Props) {
@@ -210,19 +209,6 @@ export function AppointmentForm({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja cancelar este agendamento?")) return;
-
-    try {
-      await api.delete(`/appointments/${id}`);
-      setStatus({ type: "", message: "" });
-      onDeleteSuccess(); // Avisa o pai para recarregar a lista
-    } catch (error) {
-      alert("Erro ao cancelar agendamento");
-      console.error(error);
-    }
-  };
-
   const handleCancel = () => {
     setStatus({ type: "", message: "" });
     onCancelEdit?.(); // avisa o pai
@@ -252,7 +238,7 @@ export function AppointmentForm({
             )}
 
             <button
-              onClick={onCancelEdit}
+              onClick={handleCancel}
               title="Fechar"
               className="text-gray-400 hover:text-gray-700 transition"
             >
