@@ -5,7 +5,8 @@ import ptBr from "@fullcalendar/core/locales/pt-br"; // Tradução para PT-BR
 import { useState, useEffect } from "react";
 import { api } from "../services/api";
 import type { BodyType } from "../types/body-type";
-import { TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { AppointmentForm } from "./AppointmentForm";
 
 interface IAppointment {
   id: string;
@@ -26,18 +27,70 @@ interface IAppointment {
 
 interface Props {
   keyRefresh: number;
-  onEdit: (appointment: any) => void;
+  onSuccess?: () => void;
   onDeleteSuccess?: () => void;
+  onCancelEdit?: () => void;
 }
 
-export function CalendarView({ keyRefresh, onEdit, onDeleteSuccess }: Props) {
+export function CalendarView({
+  keyRefresh,
+  onSuccess,
+  onDeleteSuccess,
+}: Props) {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dayAppointments, setDayAppointments] = useState<any[]>([]); // Lista filtrada do dia
+  const [open, setOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<any>(null);
+  const [mode, setMode] = useState<"view" | "edit">("view");
+
+  const handleUpdate = () => {
+    setEditingAppointment(null);
+  };
+
+  //Ação ao clicar no dia (quadrado branco)
+  const handleDateClick = (arg: any) => {
+    setSelectedDate(arg.dateStr);
+    filterEventsForDate(arg.dateStr, events);
+
+    // rola a tela suavemente para a lista abaixo
+    setTimeout(() => {
+      document
+        .getElementById("daily-list")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleEventClick = (clickInfo: any) => {
+    const dateStr = clickInfo.event.start?.toISOString().split("T")[0];
+
+    if (!dateStr) return;
+
+    setSelectedDate(dateStr);
+    filterEventsForDate(dateStr, events);
+
+    setTimeout(() => {
+      document
+        .getElementById("daily-list")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja cancelar este agendamento?")) return;
+    try {
+      await api.delete(`/appointments/${id}`);
+      // avisa o pai para recarregar os dados (disparar keyRefresh)
+      if (onDeleteSuccess) onDeleteSuccess();
+      else alert("Deletado! Atualize a página.");
+    } catch (error) {
+      alert("Erro ao cancelar agendamento");
+    }
+  };
 
   useEffect(() => {
     api
-      .get("/appointments")
+      .get(`/appointments/my`)
       .then((response) => {
         const formattedEvents = response.data.map((app: IAppointment) => ({
           id: app.id,
@@ -54,50 +107,24 @@ export function CalendarView({ keyRefresh, onEdit, onDeleteSuccess }: Props) {
       .catch((err) => console.error("Erro ao buscar eventos", err));
   }, [keyRefresh]);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [open]);
+
   const filterEventsForDate = (dateStr: string, eventsList: any[]) => {
     const filtered = eventsList.filter((event) => {
       const eventDate = event.start.split("T")[0];
       return eventDate === dateStr;
     });
     setDayAppointments(filtered);
-  };
-
-  //Ação ao clicar no dia (quadrado branco)
-  const handleDateClick = (arg: any) => {
-    setSelectedDate(arg.dateStr);
-    filterEventsForDate(arg.dateStr, events);
-
-    // Rola a tela suavemente para a lista abaixo
-    setTimeout(() => {
-      document
-        .getElementById("daily-list")
-        ?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
-
-  // clicar num evento (na barra colorida do calendário)
-  const handleEventClick = (clickInfo: any) => {
-    // Recuperamos os dados originais que salvamos em 'extendedProps'
-    const originalAppointment = clickInfo.event.extendedProps;
-
-    const appointmentToEdit = {
-      ...originalAppointment,
-      id: clickInfo.event.id,
-    };
-
-    onEdit(appointmentToEdit);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja cancelar este agendamento?")) return;
-    try {
-      await api.delete(`/appointments/${id}`);
-      // avisa o pai para recarregar os dados (disparar keyRefresh)
-      if (onDeleteSuccess) onDeleteSuccess();
-      else alert("Deletado! Atualize a página.");
-    } catch (error) {
-      alert("Erro ao cancelar agendamento");
-    }
   };
 
   const formatTime = (iso: string) => {
@@ -125,14 +152,14 @@ export function CalendarView({ keyRefresh, onEdit, onDeleteSuccess }: Props) {
             right: "dayGridMonth",
           }}
           events={events}
-          dateClick={handleDateClick} // <--- Clicar no dia
-          eventClick={handleEventClick} // <--- Clicar no evento
+          dateClick={handleDateClick}
+          eventClick={handleEventClick}
           height="auto"
           eventColor="#3B82F6"
         />
       </div>
 
-      {/* LISTA DE DETALHES DO DIA (Aparece só quando clica) */}
+      {/* lista de detalhes do dia (Aparece quando clica) */}
       {selectedDate && (
         <div
           id="daily-list"
@@ -172,11 +199,15 @@ export function CalendarView({ keyRefresh, onEdit, onDeleteSuccess }: Props) {
                       </button>
 
                       <button
-                        onClick={() => onEdit({ ...app, id: evt.id })}
-                        title="Editar Consulta"
+                        onClick={() => {
+                          setMode("view");
+                          setOpen(true);
+                          setEditingAppointment({ ...app, id: evt.id });
+                        }}
+                        title="Visualizar Consulta"
                         className="text-gray-400 hover:text-gray-700 transition"
                       >
-                        <PencilIcon className="w-4 h-4" />
+                        <EyeIcon className="w-4 h-4" />
                       </button>
                     </div>
 
@@ -200,6 +231,33 @@ export function CalendarView({ keyRefresh, onEdit, onDeleteSuccess }: Props) {
               })}
             </div>
           )}
+        </div>
+      )}
+      {open && editingAppointment && (
+        <div className="overlay">
+          <div className="modal">
+            <h2 className="text-xl font-bold mb-4">Visualizar Consulta</h2>
+
+            <AppointmentForm
+              appointmentToEdit={editingAppointment}
+              mode={mode}
+              setMode={setMode}
+              onSuccess={() => {
+                handleUpdate();
+                onSuccess?.();
+                setOpen(false);
+              }}
+              onDeleteSuccess={() => {
+                handleUpdate();
+                onSuccess?.();
+                setOpen(false);
+              }}
+              onCancelEdit={() => {
+                setEditingAppointment(null);
+                setOpen(false);
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

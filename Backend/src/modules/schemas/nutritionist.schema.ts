@@ -14,6 +14,9 @@ export class Nutritionist {
   @Prop({ required: true, unique: true })
   crn: string;
 
+  @Prop({ required: true })
+  password: string;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

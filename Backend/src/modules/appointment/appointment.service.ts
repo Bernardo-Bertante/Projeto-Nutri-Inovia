@@ -88,6 +88,10 @@ export class AppointmentService {
     return appointment;
   }
 
+  async findAllFromNutriId(nutriId: string): Promise<IAppointment[]> {
+    return await this.appointmentRepository.findAllFromNutriId(nutriId);
+  }
+
   async findAll(): Promise<IAppointment[]> {
     return await this.appointmentRepository.findAllPopulated();
   }

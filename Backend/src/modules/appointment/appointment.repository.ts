@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   Appointment,
   AppointmentDocument,
@@ -13,7 +13,7 @@ import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 export class AppointmentRepository {
   constructor(
     @InjectModel(Appointment.name)
-    private appointmentModel: Model<AppointmentDocument>,
+    private readonly appointmentModel: Model<AppointmentDocument>,
   ) {}
 
   async create(
@@ -25,6 +25,14 @@ export class AppointmentRepository {
     return createdAppointments.map((appointment) =>
       this.toDomain(appointment.toObject() as AppointmentDocument),
     );
+  }
+
+  async findAllFromNutriId(nutriId: string): Promise<IAppointment[]> {
+    const appointments = await this.appointmentModel
+      .find({ nutritionistId: nutriId })
+      .populate('nutritionistId', 'name crn')
+      .exec();
+    return appointments.map((appointment) => this.toDomain(appointment));
   }
 
   async findAllPopulated(): Promise<IAppointment[]> {

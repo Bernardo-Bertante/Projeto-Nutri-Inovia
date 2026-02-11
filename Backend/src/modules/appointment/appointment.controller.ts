@@ -7,6 +7,8 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
@@ -24,6 +26,8 @@ import {
 import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { AppointmentResponseDto } from '../dtos/appointment-response.dto';
 import { AppointmentMapper } from '../mapper/appointment-mapper';
+import { AuthGuard } from '@nestjs/passport';
+import { RequestWithUser } from '../dtos/request-user.dto';
 
 @ApiTags('Appointments')
 @Controller('appointments')
@@ -60,6 +64,25 @@ export class AppointmentController {
   })
   async findAll(): Promise<AppointmentResponseDto[]> {
     const result = await this.appointmentService.findAll();
+    return result.map((appointments) =>
+      this.appointmentMapper.toResponseDto(appointments),
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('my')
+  @ApiOperation({ summary: 'Listar meus agendamentos' })
+  @ApiOkResponse({
+    description: 'Lista de Agendamentos do nutricionista logado',
+    type: [AppointmentResponseDto],
+  })
+  async findMine(
+    @Req() req: RequestWithUser,
+  ): Promise<AppointmentResponseDto[]> {
+    const result = await this.appointmentService.findAllFromNutriId(
+      req.user.id,
+    );
+
     return result.map((appointments) =>
       this.appointmentMapper.toResponseDto(appointments),
     );
