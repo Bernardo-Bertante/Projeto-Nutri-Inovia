@@ -28,7 +28,6 @@ export class AppointmentRepository {
   }
 
   async findAllFromNutriId(nutriId: string): Promise<IAppointment[]> {
-    console.log('nutriId recebido:', nutriId);
     const appointments = await this.appointmentModel
       .find({ nutritionistId: nutriId })
       .populate('nutritionistId', 'name crn')

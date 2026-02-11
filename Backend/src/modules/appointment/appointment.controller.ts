@@ -7,6 +7,8 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from '../dtos/create-appointment.dto';
@@ -24,6 +26,8 @@ import {
 import { UpdateAppointmentDto } from '../dtos/update-appointment.dto';
 import { AppointmentResponseDto } from '../dtos/appointment-response.dto';
 import { AppointmentMapper } from '../mapper/appointment-mapper';
+import { AuthGuard } from '@nestjs/passport';
+import { RequestWithUser } from '../dtos/request-user.dto';
 
 @ApiTags('Appointments')
 @Controller('appointments')
@@ -65,21 +69,20 @@ export class AppointmentController {
     );
   }
 
-  @Get(':nutritionistId')
-  @ApiOperation({ summary: 'Listar todos os agendamentos de um nutricionista' })
-  @ApiParam({
-    name: 'nutritionistId',
-    type: String,
-    description: 'ID referente ao nutricionista',
-  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('my')
+  @ApiOperation({ summary: 'Listar meus agendamentos' })
   @ApiOkResponse({
-    description: 'Lista de Agendamento de um nutricionista',
+    description: 'Lista de Agendamentos do nutricionista logado',
     type: [AppointmentResponseDto],
   })
-  async findAllFromNutriId(
-    @Param('nutritionistId') nutriId: string,
+  async findMine(
+    @Req() req: RequestWithUser,
   ): Promise<AppointmentResponseDto[]> {
-    const result = await this.appointmentService.findAllFromNutriId(nutriId);
+    const result = await this.appointmentService.findAllFromNutriId(
+      req.user.id,
+    );
+
     return result.map((appointments) =>
       this.appointmentMapper.toResponseDto(appointments),
     );

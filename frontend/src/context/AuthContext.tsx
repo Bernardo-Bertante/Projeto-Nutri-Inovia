@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import type { ReactNode } from "react";
 import { api } from "../services/api";
+import { jwtDecode } from "jwt-decode";
 
 interface User {
   id: string;
@@ -23,15 +24,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // verifica se já tem token salvo
+    const interceptorId = api.interceptors.response.use(
+      (response) => response, // Se sucesso, não faz nada
+      (error) => {
+        if (error.response?.status === 401) {
+          if (!error.config.url.includes("/auth/login")) {
+            confirm("Token de acesso expirado. Realize login novamente.");
+            clearAuthData();
+          }
+        }
+        return Promise.reject(error);
+      },
+    );
+    return () => {
+      api.interceptors.response.eject(interceptorId);
+    };
+  }, []);
+
+  useEffect(() => {
     const storagedUser = localStorage.getItem("@NutriApp:user");
     const storagedToken = localStorage.getItem("@NutriApp:token");
 
     if (storagedToken && storagedUser) {
-      // Se tiver, injeta ele em todas as requisições futuras
-      api.defaults.headers.common["Authorization"] = `Bearer ${storagedToken}`;
-      setUser(JSON.parse(storagedUser));
+      try {
+        const decoded = jwtDecode(storagedToken);
+        const currentTime = Date.now() / 1000;
+
+        if (decoded.exp && decoded.exp < currentTime) {
+          // --- TOKEN EXPIRADO ---
+          confirm("Token de acesso expirado. Realize login novamente.");
+          clearAuthData();
+        } else {
+          // --- TOKEN VÁLIDO ---
+          api.defaults.headers.common["Authorization"] =
+            `Bearer ${storagedToken}`;
+          setUser(JSON.parse(storagedUser));
+        }
+      } catch (error) {
+        console.error("Token inválido no storage:", error);
+        clearAuthData();
+      }
     }
+
     setLoading(false);
   }, []);
 
@@ -63,6 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.clear();
     setUser(null);
     delete api.defaults.headers.common["Authorization"];
+  }
+
+  function clearAuthData() {
+    localStorage.removeItem("@NutriApp:user");
+    localStorage.removeItem("@NutriApp:token");
+    delete api.defaults.headers.common["Authorization"];
+    setUser(null);
   }
 
   return (

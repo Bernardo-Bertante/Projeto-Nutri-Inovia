@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { BodyType, bodyTypeLabels } from "../types/body-type";
-import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface INutritionist {
   id: string;
@@ -30,6 +30,8 @@ interface Props {
   appointmentToEdit: IAppointment | null;
   onCancelEdit?: () => void;
   onDeleteSuccess: () => void;
+  mode?: "view" | "edit";
+  setMode?: (mode: "view" | "edit") => void;
 }
 
 export function AppointmentForm({
@@ -37,6 +39,8 @@ export function AppointmentForm({
   appointmentToEdit,
   onCancelEdit,
   onDeleteSuccess,
+  mode,
+  setMode,
 }: Props) {
   const [nutritionists, setNutritionists] = useState<INutritionist[]>([]);
   const [isRecurrent, setIsRecurrent] = useState(false);
@@ -138,6 +142,11 @@ export function AppointmentForm({
     e.preventDefault();
     setStatus({ type: "", message: "" });
 
+    if (appointmentToEdit && mode === "view") {
+      onSuccess?.();
+      return;
+    }
+
     const payload = {
       ...formData,
       isRecurrent,
@@ -147,6 +156,7 @@ export function AppointmentForm({
 
     try {
       // Envia para o backend
+
       if (appointmentToEdit) {
         // --- (PUT) ---
         const id = appointmentToEdit.id;
@@ -157,6 +167,11 @@ export function AppointmentForm({
           birthDate: formData.birthDate,
         });
         setStatus({ type: "success", message: "Agendamento atualizado!" });
+        setMode?.("view");
+        setTimeout(() => {
+          setStatus({ type: "", message: "" });
+        }, 5000);
+        return;
       } else {
         // --- (POST) ---
         await api.post("/appointments", {
@@ -215,27 +230,33 @@ export function AppointmentForm({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-6 border-t-4 border-blue-600">
-      <div className="flex gap-5 items-center">
+      <div className="flex justify-between gap-5 items-center">
         <h2 className="text-2xl font-bold text-gray-800">
-          {appointmentToEdit ? "Editar Agendamento" : "Novo Agendamento"}
+          {mode === "view"
+            ? "Agendamento"
+            : appointmentToEdit
+              ? "Editar Agendamento"
+              : "Novo Agendamento"}
         </h2>
 
         {appointmentToEdit && (
           <div className="flex gap-2">
-            <button
-              onClick={() => handleDelete(appointmentToEdit.id)}
-              title="Cancelar Agendamento"
-              className="text-gray-400 hover:text-red-500 transition"
-            >
-              <TrashIcon className="w-4 h-4" />
-            </button>
+            {mode === "view" && (
+              <button
+                onClick={() => setMode?.("edit")}
+                title="Editar Agendamento"
+                className="text-gray-400 hover:text-blue-500 transition"
+              >
+                <PencilIcon className="w-5 h-5" />
+              </button>
+            )}
 
             <button
-              onClick={handleCancel}
-              title="Cancelar Alterações"
+              onClick={onCancelEdit}
+              title="Fechar"
               className="text-gray-400 hover:text-gray-700 transition"
             >
-              <XMarkIcon className="w-4 h-4" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
         )}
@@ -262,6 +283,7 @@ export function AppointmentForm({
           </label>
           <select
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-black"
+            disabled={mode === "view"}
             value={formData.nutritionistId}
             onChange={(e) =>
               setFormData({ ...formData, nutritionistId: e.target.value })
@@ -285,6 +307,7 @@ export function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
              focus:border-blue-500 focus:ring-blue-500 
              text-black"
+            readOnly={mode === "view"}
             value={formData.patientName}
             onChange={(e) =>
               setFormData({ ...formData, patientName: e.target.value })
@@ -302,6 +325,7 @@ export function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
              focus:border-blue-500 focus:ring-blue-500 
              text-black"
+            readOnly={mode === "view"}
             value={formData.email}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
@@ -319,6 +343,7 @@ export function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
              focus:border-blue-500 focus:ring-blue-500 
              text-black"
+            readOnly={mode === "view"}
             value={formData.phoneNumber}
             onChange={(e) =>
               setFormData({ ...formData, phoneNumber: e.target.value })
@@ -336,6 +361,7 @@ export function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
              focus:border-blue-500 focus:ring-blue-500 
              text-black"
+            readOnly={mode === "view"}
             value={formData.cpf}
             onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
           />
@@ -348,6 +374,7 @@ export function AppointmentForm({
           </label>
           <select
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-black"
+            disabled={mode === "view"}
             value={formData.bodyType}
             onChange={(e) =>
               setFormData({ ...formData, bodyType: e.target.value as BodyType })
@@ -376,6 +403,7 @@ export function AppointmentForm({
             className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
     ${formData.birthDate ? "text-black" : "text-gray-400"}
   `}
+            readOnly={mode === "view"}
             value={formData.birthDate}
             onChange={(e) =>
               setFormData({ ...formData, birthDate: e.target.value })
@@ -395,6 +423,7 @@ export function AppointmentForm({
             className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
     ${formData.startDate ? "text-black" : "text-gray-400"}
   `}
+            readOnly={mode === "view"}
             value={formData.startDate}
             onChange={(e) =>
               setFormData({

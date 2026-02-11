@@ -7,7 +7,6 @@ import { api } from "../services/api";
 import type { BodyType } from "../types/body-type";
 import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { AppointmentForm } from "./AppointmentForm";
-import { useAuth } from "../context/AuthContext";
 
 interface IAppointment {
   id: string;
@@ -43,7 +42,7 @@ export function CalendarView({
   const [dayAppointments, setDayAppointments] = useState<any[]>([]); // Lista filtrada do dia
   const [open, setOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<any>(null);
-  const { user } = useAuth();
+  const [mode, setMode] = useState<"view" | "edit">("view");
 
   const handleUpdate = () => {
     setEditingAppointment(null);
@@ -90,9 +89,8 @@ export function CalendarView({
   };
 
   useEffect(() => {
-    const id = user?.id;
     api
-      .get(`/appointments/${id}`)
+      .get(`/appointments/my`)
       .then((response) => {
         const formattedEvents = response.data.map((app: IAppointment) => ({
           id: app.id,
@@ -202,6 +200,7 @@ export function CalendarView({
 
                       <button
                         onClick={() => {
+                          setMode("view");
                           setOpen(true);
                           setEditingAppointment({ ...app, id: evt.id });
                         }}
@@ -237,10 +236,12 @@ export function CalendarView({
       {open && editingAppointment && (
         <div className="overlay">
           <div className="modal">
-            <h2 className="text-xl font-bold mb-4">Editar Consulta</h2>
+            <h2 className="text-xl font-bold mb-4">Visualizar Consulta</h2>
 
             <AppointmentForm
               appointmentToEdit={editingAppointment}
+              mode={mode}
+              setMode={setMode}
               onSuccess={() => {
                 handleUpdate();
                 onSuccess?.();

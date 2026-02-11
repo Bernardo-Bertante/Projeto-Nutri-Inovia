@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NutritionistSchema } from '../modules/schemas/nutritionist.schema';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -15,11 +16,11 @@ import { NutritionistSchema } from '../modules/schemas/nutritionist.schema';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+        expiresIn: Number(process.env.JWT_EXPIRES_IN),
       },
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })
