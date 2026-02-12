@@ -1,11 +1,8 @@
 import {
-  IsDateString,
   IsNotEmpty,
   IsString,
   IsEnum,
   IsEmail,
-  IsNumberString,
-  IsMobilePhone,
   Matches,
   IsNumber,
   IsOptional,
@@ -20,7 +17,9 @@ export class CreateAppointmentDto {
     example: '2026-01-29T14:00:00.000Z',
     description: 'Data e horário de início da consulta (ISO 8601)',
   })
-  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
+  @Matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, {
+    message: 'Data deve estar no formato ISO 8601 com ano de 4 dígitos.',
+  })
   @IsNotEmpty()
   startDate: string;
 
@@ -28,7 +27,9 @@ export class CreateAppointmentDto {
     example: '2026-01-29T15:00:00.000Z',
     description: 'Data e horário de término da consulta (ISO 8601)',
   })
-  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
+  @Matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, {
+    message: 'Data deve estar no formato ISO 8601 com ano de 4 dígitos.',
+  })
   @IsNotEmpty()
   endDate: string;
 
@@ -44,10 +45,10 @@ export class CreateAppointmentDto {
     example: 'João da Silva',
     description: 'Nome completo do paciente',
   })
-  @IsString({ message: 'Nome do paciente deve conter apenas letras' })
   @Matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, {
     message: 'Nome do paciente deve conter apenas letras',
   })
+  @IsNotEmpty()
   patientName: string;
 
   @ApiProperty({
@@ -62,7 +63,10 @@ export class CreateAppointmentDto {
     example: '+5511999999999',
     description: 'Telefone celular do paciente no padrão brasileiro (+55)',
   })
-  @IsMobilePhone('pt-BR', {}, { message: 'Telefone inválido.' })
+  @Matches(/^\+55\d{11}$/, {
+    message:
+      'Telefone deve estar no formato +55 seguido de 11 dígitos (DDD + número).',
+  })
   @IsNotEmpty()
   phoneNumber: string;
 
@@ -70,7 +74,9 @@ export class CreateAppointmentDto {
     example: '1995-06-20',
     description: 'Data de nascimento do paciente (YYYY-MM-DD)',
   })
-  @IsDateString({}, { message: 'É necessário a seleção de uma data válida.' })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'Data deve estar no formato YYYY-MM-DD com ano de 4 dígitos.',
+  })
   @IsNotEmpty()
   birthDate: string;
 
@@ -86,14 +92,16 @@ export class CreateAppointmentDto {
 
   @ApiProperty({
     example: '12345678901',
-    description: 'CPF do paciente (somente números)',
+    description: 'CPF do paciente (11 dígitos, somente números)',
   })
-  @IsNumberString({}, { message: 'CPF deve ser somente composto por números.' })
+  @Matches(/^\d{11}$/, {
+    message: 'CPF deve conter exatamente 11 dígitos numéricos.',
+  })
   @IsNotEmpty()
   cpf: string;
 
   @ApiProperty({
-    example: 'Sim/Não',
+    example: true,
     description: 'Booleano que diz se a consulta será recorrente ou não.',
   })
   @IsBoolean()
@@ -101,14 +109,14 @@ export class CreateAppointmentDto {
   isRecurrent?: boolean;
 
   @ApiProperty({
-    example: 'de 5 em 5 dias.',
-    description: 'A cada X dias',
+    example: 5,
+    description: 'Intervalo em dias entre as consultas.',
   })
   @IsNumber(
     {},
     {
       message:
-        'É necessário o uso de um valor que representa o intervalo de dias entre as consultas desse paciente.',
+        'É necessário informar um número que representa o intervalo em dias.',
     },
   )
   @IsOptional()
@@ -116,14 +124,14 @@ export class CreateAppointmentDto {
   recurrenceInterval?: number;
 
   @ApiProperty({
-    example: 'por 7 consultas.',
-    description: 'Repetir X vezes.',
+    example: 7,
+    description: 'Quantidade de consultas a serem repetidas.',
   })
   @IsNumber(
     {},
     {
       message:
-        'É necessário o uso de um valor que representa quantas consultas serão agendadas.',
+        'É necessário informar um número que representa quantas consultas serão agendadas.',
     },
   )
   @IsOptional()

@@ -326,14 +326,24 @@ export function AppointmentForm({
           </label>
           <input
             type="text"
+            maxLength={14}
+            inputMode="numeric"
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
-             focus:border-blue-500 focus:ring-blue-500 
-             text-black"
+  focus:border-blue-500 focus:ring-blue-500 text-black"
             readOnly={mode === "view"}
             value={formData.phoneNumber}
-            onChange={(e) =>
-              setFormData({ ...formData, phoneNumber: e.target.value })
-            }
+            onChange={(e) => {
+              let value = e.target.value.replace(/\D/g, "");
+
+              if (!value.startsWith("55")) {
+                value = "55" + value;
+              }
+
+              setFormData({
+                ...formData,
+                phoneNumber: "+" + value.slice(0, 13),
+              });
+            }}
           />
         </div>
 
@@ -344,12 +354,19 @@ export function AppointmentForm({
           </label>
           <input
             type="text"
+            maxLength={11}
+            inputMode="numeric"
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm 
-             focus:border-blue-500 focus:ring-blue-500 
-             text-black"
+  focus:border-blue-500 focus:ring-blue-500 text-black"
             readOnly={mode === "view"}
             value={formData.cpf}
-            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+            onChange={(e) => {
+              const onlyNumbers = e.target.value.replace(/\D/g, "");
+              setFormData({
+                ...formData,
+                cpf: onlyNumbers.slice(0, 11),
+              });
+            }}
           />
         </div>
 
@@ -385,6 +402,8 @@ export function AppointmentForm({
           </label>
           <input
             type="date"
+            max="2026-12-31"
+            min="1900-01-01"
             required
             className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
     ${formData.birthDate ? "text-black" : "text-gray-400"}
@@ -405,6 +424,8 @@ export function AppointmentForm({
           </label>
           <input
             type="datetime-local"
+            max="2099-12-31T23:59"
+            min="2026-01-01T00:00"
             required
             className={`mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm
     ${formData.startDate ? "text-black" : "text-gray-400"}

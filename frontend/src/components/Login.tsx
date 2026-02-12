@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     try {
       await signIn(email, password);
-      // Se der certo, o AuthContext atualiza o estado e a tela muda sozinha
+      navigate("/appointments", { replace: true });
     } catch (err) {
       setError("Credenciais inválidas. Tente novamente.");
     }
